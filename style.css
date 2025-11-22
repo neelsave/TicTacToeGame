@@ -500,6 +500,13 @@ body {
     margin: 0 auto;
 }
 
+@media (max-width: 600px) {
+    .app-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
 .app-card {
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(12px);
