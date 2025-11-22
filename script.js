@@ -43,8 +43,8 @@ resetButton.addEventListener('click', startGame);
 changePlayersBtn.addEventListener('click', handleChangePlayers);
 
 function handleStartGame() {
-    playerXName = playerXInput.value || 'Player X';
-    playerOName = playerOInput.value || 'Player O';
+    playerXName = playerXInput.value || 'X';
+    playerOName = playerOInput.value || 'O';
 
     scoreNameX.innerText = playerXName;
     scoreNameO.innerText = playerOName;
