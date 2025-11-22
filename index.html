@@ -33,10 +33,10 @@
                     <h2>Water Tracker</h2>
                     <p>Stay hydrated</p>
                 </div>
-                <div class="app-card" onclick="showApp('calculator')">
-                    <div class="app-icon">🧮</div>
-                    <h2>Calculator</h2>
-                    <p>Simple math</p>
+                <div class="app-card" onclick="showApp('watertracker')">
+                    <div class="app-icon">💧</div>
+                    <h2>Water Tracker</h2>
+                    <p>Stay hydrated</p>
                 </div>
             </div>
         </div>
@@ -108,45 +108,7 @@
         </main>
     </div>
 
-    <!-- Calculator App -->
-    <div id="app-calculator" class="app-view hidden">
-        <button class="btn-home" onclick="showHome()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            Home
-        </button>
 
-        <div class="calculator-container">
-            <div class="calculator-grid">
-                <div class="output">
-                    <div data-previous-operand class="previous-operand"></div>
-                    <div data-current-operand class="current-operand"></div>
-                </div>
-                <button data-all-clear>AC</button>
-                <button data-delete>DEL</button>
-                <button data-operation>%</button>
-                <button data-operation>÷</button>
-                <button data-number>7</button>
-                <button data-number>8</button>
-                <button data-number>9</button>
-                <button data-operation>*</button>
-                <button data-number>4</button>
-                <button data-number>5</button>
-                <button data-number>6</button>
-                <button data-operation>-</button>
-                <button data-number>1</button>
-                <button data-number>2</button>
-                <button data-number>3</button>
-                <button data-operation>+</button>
-                <button data-number class="span-two">0</button>
-                <button data-number>.</button>
-                <button data-equals>=</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Water Tracker App -->
     <div id="app-watertracker" class="app-view hidden">
