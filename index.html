@@ -18,59 +18,177 @@
         <div class="blob blob-3"></div>
     </div>
 
-    <div class="setup-screen" id="setupScreen">
-        <div class="setup-content">
-            <h1>Tic Tac Toe</h1>
-            <div class="input-group">
-                <label for="playerXName">Player X Name</label>
-                <input type="text" id="playerXName" placeholder="Enter Name">
+    <!-- Home Screen -->
+    <div id="home-screen" class="app-view">
+        <div class="home-content">
+            <h1>Game Center</h1>
+            <div class="app-grid">
+                <div class="app-card" onclick="showApp('tictactoe')">
+                    <div class="app-icon">❌⭕</div>
+                    <h2>Tic Tac Toe</h2>
+                    <p>Classic strategy game</p>
+                </div>
+                <div class="app-card" onclick="showApp('watertracker')">
+                    <div class="app-icon">💧</div>
+                    <h2>Water Tracker</h2>
+                    <p>Stay hydrated</p>
+                </div>
+                <div class="app-card" onclick="showApp('calculator')">
+                    <div class="app-icon">🧮</div>
+                    <h2>Calculator</h2>
+                    <p>Simple math</p>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="playerOName">Player O Name</label>
-                <input type="text" id="playerOName" placeholder="Enter Name">
-            </div>
-            <button id="startGameBtn" class="btn-start">Start Game</button>
         </div>
     </div>
 
-    <main class="game-container hidden" id="gameContainer">
-        <header class="game-header">
-            <h1>Tic Tac Toe</h1>
-            <div class="scoreboard">
-                <div class="score-item">
-                    <span class="score-name" id="scoreNameX">X</span>
-                    <span class="score-value" id="scoreValueX">0</span>
+    <!-- Tic Tac Toe App -->
+    <div id="app-tictactoe" class="app-view hidden">
+        <button class="btn-home" onclick="showHome()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            Home
+        </button>
+
+        <div class="setup-screen" id="setupScreen">
+            <div class="setup-content">
+                <h1>Tic Tac Toe</h1>
+                <div class="input-group">
+                    <label for="playerXName">Player X Name</label>
+                    <input type="text" id="playerXName" placeholder="Enter Name">
                 </div>
-                <div class="score-item">
-                    <span class="score-name" id="scoreNameO">O</span>
-                    <span class="score-value" id="scoreValueO">0</span>
+                <div class="input-group">
+                    <label for="playerOName">Player O Name</label>
+                    <input type="text" id="playerOName" placeholder="Enter Name">
+                </div>
+                <button id="startGameBtn" class="btn-start">Start Game</button>
+            </div>
+        </div>
+
+        <main class="game-container hidden" id="gameContainer">
+            <header class="game-header">
+                <h1>Tic Tac Toe</h1>
+                <div class="scoreboard">
+                    <div class="score-item">
+                        <span class="score-name" id="scoreNameX">X</span>
+                        <span class="score-value" id="scoreValueX">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-name" id="scoreNameO">O</span>
+                        <span class="score-value" id="scoreValueO">0</span>
+                    </div>
+                </div>
+                <div class="status-display" id="statusDisplay">Player <span class="current-player">X</span>'s Turn</div>
+            </header>
+
+            <div class="game-board" id="gameBoard">
+                <div class="tile" data-index="0"></div>
+                <div class="tile" data-index="1"></div>
+                <div class="tile" data-index="2"></div>
+                <div class="tile" data-index="3"></div>
+                <div class="tile" data-index="4"></div>
+                <div class="tile" data-index="5"></div>
+                <div class="tile" data-index="6"></div>
+                <div class="tile" data-index="7"></div>
+                <div class="tile" data-index="8"></div>
+            </div>
+
+            <div class="controls">
+                <button id="resetBtn" class="btn-reset">Reset Board</button>
+                <button id="changePlayersBtn" class="btn-secondary">Change Players</button>
+            </div>
+
+            <div class="winning-message" id="winningMessage">
+                <div data-winning-message-text></div>
+                <button id="restartBtn">New Game</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Calculator App -->
+    <div id="app-calculator" class="app-view hidden">
+        <button class="btn-home" onclick="showHome()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            Home
+        </button>
+
+        <div class="calculator-container">
+            <div class="calculator-grid">
+                <div class="output">
+                    <div data-previous-operand class="previous-operand"></div>
+                    <div data-current-operand class="current-operand"></div>
+                </div>
+                <button data-all-clear>AC</button>
+                <button data-delete>DEL</button>
+                <button data-operation>%</button>
+                <button data-operation>÷</button>
+                <button data-number>7</button>
+                <button data-number>8</button>
+                <button data-number>9</button>
+                <button data-operation>*</button>
+                <button data-number>4</button>
+                <button data-number>5</button>
+                <button data-number>6</button>
+                <button data-operation>-</button>
+                <button data-number>1</button>
+                <button data-number>2</button>
+                <button data-number>3</button>
+                <button data-operation>+</button>
+                <button data-number class="span-two">0</button>
+                <button data-number>.</button>
+                <button data-equals>=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Water Tracker App -->
+    <div id="app-watertracker" class="app-view hidden">
+        <button class="btn-home" onclick="showHome()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            Home
+        </button>
+
+        <div class="water-container">
+            <h1>Water Tracker</h1>
+
+            <div class="progress-circle-container">
+                <svg class="progress-ring" width="200" height="200">
+                    <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="15"
+                        fill="transparent" r="85" cx="100" cy="100" />
+                    <circle class="progress-ring__circle" stroke="var(--accent-primary)" stroke-width="15"
+                        fill="transparent" r="85" cx="100" cy="100" />
+                </svg>
+                <div class="progress-text">
+                    <span id="currentWater">0</span>
+                    <span class="unit">ml</span>
+                    <div class="goal-text">Goal: <span id="waterGoal">2000</span>ml</div>
                 </div>
             </div>
-            <div class="status-display" id="statusDisplay">Player <span class="current-player">X</span>'s Turn</div>
-        </header>
 
-        <div class="game-board" id="gameBoard">
-            <div class="tile" data-index="0"></div>
-            <div class="tile" data-index="1"></div>
-            <div class="tile" data-index="2"></div>
-            <div class="tile" data-index="3"></div>
-            <div class="tile" data-index="4"></div>
-            <div class="tile" data-index="5"></div>
-            <div class="tile" data-index="6"></div>
-            <div class="tile" data-index="7"></div>
-            <div class="tile" data-index="8"></div>
-        </div>
+            <div class="water-controls">
+                <button class="btn-water" onclick="addWater(250)">+250ml</button>
+                <button class="btn-water" onclick="addWater(500)">+500ml</button>
+            </div>
 
-        <div class="controls">
-            <button id="resetBtn" class="btn-reset">Reset Board</button>
-            <button id="changePlayersBtn" class="btn-secondary">Change Players</button>
-        </div>
+            <div class="custom-water">
+                <input type="number" id="customWaterInput" placeholder="Custom amount">
+                <button class="btn-water-small" onclick="addCustomWater()">Add</button>
+            </div>
 
-        <div class="winning-message" id="winningMessage">
-            <div data-winning-message-text></div>
-            <button id="restartBtn">New Game</button>
+            <button class="btn-reset-water" onclick="resetWater()">Reset Day</button>
         </div>
-    </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
