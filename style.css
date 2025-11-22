@@ -651,3 +651,17 @@ body {
     color: var(--accent-o);
     text-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
 }
+
+/* Custom App Icons */
+.icon-x {
+    color: var(--accent-x);
+    text-shadow: 0 0 10px rgba(244, 114, 182, 0.5);
+    font-weight: 800;
+    margin-right: 5px;
+}
+
+.icon-o {
+    color: var(--accent-o);
+    text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+    font-weight: 800;
+}
