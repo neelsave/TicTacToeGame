@@ -30,6 +30,7 @@ const scoreNameO = document.getElementById('scoreNameO');
 const scoreValueX = document.getElementById('scoreValueX');
 const scoreValueO = document.getElementById('scoreValueO');
 const changePlayersBtn = document.getElementById('changePlayersBtn');
+const skipBtn = document.getElementById('skipBtn'); // Added skipBtn
 
 let circleTurn;
 let playerXName = '';
@@ -38,6 +39,13 @@ let scoreX = 0;
 let scoreO = 0;
 
 startGameBtn.addEventListener('click', handleStartGame);
+if (skipBtn) { // Added conditional listener for skipBtn
+    skipBtn.addEventListener('click', () => {
+        playerXInput.value = '';
+        playerOInput.value = '';
+        handleStartGame();
+    });
+}
 restartButton.addEventListener('click', startGame);
 resetButton.addEventListener('click', startGame);
 changePlayersBtn.addEventListener('click', handleChangePlayers);

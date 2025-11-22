@@ -333,6 +333,27 @@ body {
     box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
 }
 
+.btn-skip {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    width: 100%;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-skip:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
 /* Scoreboard */
 .scoreboard {
     display: flex;
