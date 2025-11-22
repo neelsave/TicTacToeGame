@@ -9,6 +9,8 @@
     /* Pink */
     --accent-o: #34d399;
     /* Emerald */
+    --accent-gold: #fbbf24;
+    /* Amber/Gold */
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --tile-size: 100px;
@@ -524,11 +526,19 @@ body {
 
 .water-container h1 {
     font-size: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     background: linear-gradient(to right, var(--accent-primary), #22d3ee);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+#currentDate {
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .progress-circle-container {
@@ -546,6 +556,17 @@ body {
     /* 2 * PI * r (85) */
     stroke-dashoffset: 534;
     stroke-linecap: round;
+}
+
+.progress-ring__circle-excess {
+    transition: stroke-dashoffset 0.5s ease-in-out;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    stroke-dasharray: 534;
+    stroke-dashoffset: 534;
+    stroke-linecap: round;
+    pointer-events: none;
+    /* Let clicks pass through */
 }
 
 .progress-text {
@@ -575,60 +596,95 @@ body {
     margin-top: 5px;
 }
 
-.water-controls {
-    display: flex;
+.water-controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-}
-
-.btn-water {
-    background: rgba(56, 189, 248, 0.15);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    color: var(--accent-primary);
-    padding: 0.8rem 1.5rem;
-    border-radius: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-water:hover {
-    background: var(--accent-primary);
-    color: white;
-    transform: translateY(-2px);
-}
-
-.custom-water {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
     margin-bottom: 2rem;
 }
 
-#customWaterInput {
-    width: 120px;
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--glass-border);
-    background: rgba(0, 0, 0, 0.2);
-    color: white;
-    outline: none;
+.water-btn-visual {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 20px;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    color: var(--text-color);
 }
 
-.btn-water-small {
-    background: transparent;
+.water-btn-visual:hover {
+    background: rgba(56, 189, 248, 0.2);
+    transform: translateY(-3px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.3);
+}
+
+.water-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.water-amount {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+}
+
+.water-subtext {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.custom-water-container {
+    margin-bottom: 2rem;
+}
+
+.custom-water-input-wrapper {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--glass-border);
-    color: #cbd5e1;
-    padding: 0.6rem 1.2rem;
+    border-radius: 16px;
+    padding: 5px;
+    transition: border-color 0.3s;
+}
+
+.custom-water-input-wrapper:focus-within {
+    border-color: var(--accent-primary);
+}
+
+#customWaterInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 1rem;
+    color: white;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+}
+
+.btn-add-custom {
+    background: var(--accent-primary);
+    border: none;
+    width: 50px;
     border-radius: 12px;
+    color: white;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.2s;
 }
 
-.btn-water-small:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+.btn-add-custom:hover {
+    background: #0ea5e9;
+    transform: scale(1.05);
 }
 
 .btn-reset-water {
@@ -651,6 +707,18 @@ body {
 .goal-reached #currentWater {
     color: var(--accent-o);
     text-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
+}
+
+/* Goal Exceeded State (Overachiever) */
+.goal-exceeded .progress-ring__circle {
+    /* Main circle stays green (inherited from goal-reached or default) */
+    /* stroke: var(--accent-gold); Removed to allow layering */
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6));
+}
+
+.goal-exceeded #currentWater {
+    color: var(--accent-gold);
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
 }
 
 /* Custom App Icons */

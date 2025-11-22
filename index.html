@@ -121,12 +121,15 @@
 
         <div class="water-container">
             <h1>Water Tracker</h1>
+            <div id="currentDate"></div>
 
             <div class="progress-circle-container">
                 <svg class="progress-ring" width="200" height="200">
                     <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="15"
                         fill="transparent" r="85" cx="100" cy="100" />
                     <circle class="progress-ring__circle" stroke="var(--accent-primary)" stroke-width="15"
+                        fill="transparent" r="85" cx="100" cy="100" />
+                    <circle class="progress-ring__circle-excess" stroke="var(--accent-gold)" stroke-width="15"
                         fill="transparent" r="85" cx="100" cy="100" />
                 </svg>
                 <div class="progress-text">
@@ -136,14 +139,30 @@
                 </div>
             </div>
 
-            <div class="water-controls">
-                <button class="btn-water" onclick="addWater(250)">+250ml</button>
-                <button class="btn-water" onclick="addWater(500)">+500ml</button>
+            <div class="water-controls-grid">
+                <button class="water-btn-visual" onclick="addWater(250)">
+                    <span class="water-icon">🥤</span>
+                    <span class="water-amount">1 Glass</span>
+                    <span class="water-subtext">+250ml</span>
+                </button>
+                <button class="water-btn-visual" onclick="addWater(500)">
+                    <span class="water-icon">🧴</span>
+                    <span class="water-amount">1 Bottle</span>
+                    <span class="water-subtext">+500ml</span>
+                </button>
             </div>
 
-            <div class="custom-water">
-                <input type="number" id="customWaterInput" placeholder="Custom amount">
-                <button class="btn-water-small" onclick="addCustomWater()">Add</button>
+            <div class="custom-water-container">
+                <div class="custom-water-input-wrapper">
+                    <input type="number" id="customWaterInput" placeholder="Enter amount...">
+                    <button class="btn-add-custom" onclick="addCustomWater()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <button class="btn-reset-water" onclick="resetWater()">Reset Day</button>

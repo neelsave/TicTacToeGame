@@ -180,19 +180,24 @@ function showHome() {
 let currentWater = 0;
 const waterGoal = 2000;
 const waterCircle = document.querySelector('.progress-ring__circle');
+const excessCircle = document.querySelector('.progress-ring__circle-excess');
 const currentWaterDisplay = document.getElementById('currentWater');
 const customWaterInput = document.getElementById('customWaterInput');
 
 // Initialize circle
-if (waterCircle) {
+if (waterCircle && excessCircle) {
     const radius = waterCircle.r.baseVal.value;
     const circumference = radius * 2 * Math.PI;
+
     waterCircle.style.strokeDasharray = `${circumference} ${circumference}`;
     waterCircle.style.strokeDashoffset = circumference;
 
-    function setProgress(percent) {
+    excessCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    excessCircle.style.strokeDashoffset = circumference;
+
+    function setProgress(percent, circle) {
         const offset = circumference - (percent / 100) * circumference;
-        waterCircle.style.strokeDashoffset = offset;
+        circle.style.strokeDashoffset = offset;
     }
 
     function addWater(amount) {
@@ -213,18 +218,53 @@ if (waterCircle) {
         updateWaterUI();
     }
 
-    function updateWaterUI() {
-        currentWaterDisplay.innerText = currentWater;
-        const percent = Math.min((currentWater / waterGoal) * 100, 100);
-        setProgress(percent);
-
-        const waterContainer = document.querySelector('.water-container');
-        if (currentWater >= waterGoal) {
-            waterContainer.classList.add('goal-reached');
-        } else {
-            waterContainer.classList.remove('goal-reached');
+    function updateDate() {
+        const dateElement = document.getElementById('currentDate');
+        if (dateElement) {
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('en-US', options);
+            dateElement.innerText = today;
         }
     }
+
+    function updateWaterUI() {
+        currentWaterDisplay.innerText = currentWater;
+
+        // Main Circle Progress (max 100%)
+        const mainPercent = Math.min((currentWater / waterGoal) * 100, 100);
+        setProgress(mainPercent, waterCircle);
+
+        // Excess Circle Progress
+        let excessPercent = 0;
+        if (currentWater > waterGoal) {
+            const excessAmount = currentWater - waterGoal;
+            // Calculate excess as percentage of goal (wrapping around)
+            // or just fill it up. Let's make it fill up based on another goal unit?
+            // For now, let's map it to the same scale: 2000ml = full circle
+            excessPercent = (excessAmount / waterGoal) * 100;
+            // Cap it at 100% for visual sanity or let it loop? 
+            // Let's cap at 100% for this iteration so it doesn't look broken if they drink 4000ml
+            excessPercent = Math.min(excessPercent, 100);
+        }
+        setProgress(excessPercent, excessCircle);
+
+        const waterContainer = document.querySelector('.water-container');
+
+        // Remove all states first
+        waterContainer.classList.remove('goal-reached', 'goal-exceeded');
+
+        if (currentWater > waterGoal) {
+            waterContainer.classList.add('goal-exceeded');
+            // Ensure main circle stays green by adding goal-reached as well if needed, 
+            // or relying on CSS cascading. Let's add both to be safe/flexible.
+            waterContainer.classList.add('goal-reached');
+        } else if (currentWater >= waterGoal) {
+            waterContainer.classList.add('goal-reached');
+        }
+    }
+
+    // Initialize Date
+    updateDate();
 
     // Expose functions to global scope for onclick handlers
     window.addWater = addWater;
@@ -235,5 +275,3 @@ if (waterCircle) {
 // Expose navigation to global scope
 window.showApp = showApp;
 window.showHome = showHome;
-
-
