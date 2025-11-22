@@ -217,6 +217,13 @@ if (waterCircle) {
         currentWaterDisplay.innerText = currentWater;
         const percent = Math.min((currentWater / waterGoal) * 100, 100);
         setProgress(percent);
+
+        const waterContainer = document.querySelector('.water-container');
+        if (currentWater >= waterGoal) {
+            waterContainer.classList.add('goal-reached');
+        } else {
+            waterContainer.classList.remove('goal-reached');
+        }
     }
 
     // Expose functions to global scope for onclick handlers

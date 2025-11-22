@@ -638,6 +638,16 @@ body {
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 16px;
     color: var(--text-color);
-    transition: all 0.2s;
     font-family: inherit;
+}
+
+/* Goal Reached State */
+.goal-reached .progress-ring__circle {
+    stroke: var(--accent-o);
+    filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.5));
+}
+
+.goal-reached #currentWater {
+    color: var(--accent-o);
+    text-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
 }
