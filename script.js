@@ -280,6 +280,172 @@ if (waterCircle && excessCircle) {
     window.resetWater = resetWater;
 }
 
+// --- Expense Tracker Logic ---
+const balance = document.getElementById('balance');
+const money_plus = document.getElementById('money-plus');
+const money_minus = document.getElementById('money-minus');
+const list = document.getElementById('list');
+const form = document.getElementById('form');
+const text = document.getElementById('text');
+const amount = document.getElementById('amount');
+const expenseDashboard = document.getElementById('expense-dashboard');
+const expenseHistory = document.getElementById('expense-history');
+const navDashboard = document.getElementById('nav-dashboard');
+const navHistory = document.getElementById('nav-history');
+const categoryChipsContainer = document.getElementById('category-chips');
+
+// Quick Select Options
+const categories = [
+    { name: 'Salary', type: 'income' },
+    { name: 'Bonus', type: 'income' },
+    { name: 'Freelance', type: 'income' },
+    { name: 'Food', type: 'expense' },
+    { name: 'Shopping', type: 'expense' },
+    { name: 'Travel', type: 'expense' },
+    { name: 'Bills', type: 'expense' },
+    { name: 'Rent', type: 'expense' },
+    { name: 'Entertainment', type: 'expense' },
+    { name: 'Health', type: 'expense' }
+];
+
+function renderChips() {
+    categoryChipsContainer.innerHTML = '';
+    categories.forEach(cat => {
+        const chip = document.createElement('div');
+        chip.classList.add('chip', cat.type);
+        chip.innerText = cat.name;
+        chip.onclick = (event) => selectCategory(cat.name, cat.type, event); // Pass event
+        categoryChipsContainer.appendChild(chip);
+    });
+}
+
+function selectCategory(name, type, event) { // Accept event
+    text.value = name;
+    // Visual feedback
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Optional: Auto-focus amount?
+    amount.focus();
+}
+
+// Dummy transactions for testing or empty initially
+let transactions = [];
+
+function addTransaction(e) {
+    e.preventDefault();
+
+    if (text.value.trim() === '' || amount.value.trim() === '') {
+        alert('Please add a text and amount');
+    } else {
+        const transaction = {
+            id: generateID(),
+            text: text.value,
+            amount: +amount.value,
+            date: new Date().toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        };
+
+        transactions.push(transaction);
+
+        addTransactionDOM(transaction);
+        updateValues();
+
+        text.value = '';
+        amount.value = '';
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+
+        // Optional: Switch to history to show added item? 
+        // User said "adding expense is very simple tab", so maybe keep them on dashboard.
+        // But let's show a quick alert or toast? For now, just stay on dashboard.
+    }
+}
+
+function generateID() {
+    return Math.floor(Math.random() * 100000000);
+}
+
+function addTransactionDOM(transaction) {
+    // Get sign
+    const sign = transaction.amount < 0 ? '-' : '+';
+
+    const item = document.createElement('li');
+
+    // Add class based on value
+    item.classList.add(transaction.amount < 0 ? 'minus' : 'plus');
+
+    item.innerHTML = `
+        <div class="transaction-info">
+            <span>${transaction.text}</span>
+            <span>${sign}₹${Math.abs(transaction.amount)}</span>
+        </div>
+        <span class="transaction-date">${transaction.date}</span>
+        <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
+    `;
+
+    list.appendChild(item);
+}
+
+function updateValues() {
+    const amounts = transactions.map(transaction => transaction.amount);
+
+    const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
+
+    const income = amounts
+        .filter(item => item > 0)
+        .reduce((acc, item) => (acc += item), 0)
+        .toFixed(2);
+
+    const expense = (
+        amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) *
+        -1
+    ).toFixed(2);
+
+    balance.innerText = `₹${total}`;
+    money_plus.innerText = `+₹${income}`;
+    money_minus.innerText = `-₹${expense}`;
+}
+
+function removeTransaction(id) {
+    transactions = transactions.filter(transaction => transaction.id !== id);
+    initExpenseTracker();
+}
+
+function initExpenseTracker() {
+    list.innerHTML = '';
+    transactions.forEach(addTransactionDOM);
+    updateValues();
+    renderChips();
+}
+
+function showExpenseDashboard() {
+    expenseDashboard.classList.remove('hidden');
+    expenseHistory.classList.add('hidden');
+    navDashboard.classList.add('active');
+    navHistory.classList.remove('active');
+}
+
+function showExpenseHistory() {
+    expenseDashboard.classList.add('hidden');
+    expenseHistory.classList.remove('hidden');
+    navDashboard.classList.remove('active');
+    navHistory.classList.add('active');
+}
+
+// Initialize Expense Tracker
+initExpenseTracker();
+
+// Expose Expense Tracker functions
+window.addTransaction = addTransaction;
+window.removeTransaction = removeTransaction;
+window.showExpenseDashboard = showExpenseDashboard;
+window.showExpenseHistory = showExpenseHistory;
+
 // Expose navigation to global scope
 window.showApp = showApp;
 window.showHome = showHome;

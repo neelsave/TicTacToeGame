@@ -11,6 +11,10 @@
     /* Emerald */
     --accent-gold: #fbbf24;
     /* Amber/Gold */
+    --accent-red: #ef4444;
+    /* Red */
+    --accent-green: #2ecc71;
+    /* Green */
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --tile-size: 100px;
@@ -754,4 +758,312 @@ body {
     color: var(--accent-o);
     text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
     font-weight: 800;
+}
+
+/* Expense Tracker Styles */
+.expense-container {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    padding: 2.5rem;
+    border-radius: 30px;
+    border: 1px solid var(--glass-border);
+    text-align: center;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.expense-container h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, var(--accent-green), var(--accent-gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.balance-container {
+    margin-bottom: 2rem;
+}
+
+.balance-container h4 {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.balance-container h1 {
+    font-size: 2.5rem;
+    color: var(--text-color);
+    margin: 0;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+}
+
+.inc-exp-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.inc-exp-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.inc-exp-card h4 {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+.money {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.money.plus {
+    color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+}
+
+.money.minus {
+    color: var(--accent-red);
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.expense-container h3 {
+    text-align: left;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.5rem;
+}
+
+.list {
+    list-style-type: none;
+    margin-bottom: 2rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.list li {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border-right: 5px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.list li:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(2px);
+}
+
+.list li.plus {
+    border-right-color: var(--accent-green);
+}
+
+.list li.minus {
+    border-right-color: var(--accent-red);
+}
+
+.delete-btn {
+    cursor: pointer;
+    background-color: var(--accent-red);
+    border: 0;
+    color: #fff;
+    font-size: 14px;
+    line-height: 14px;
+    padding: 2px 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(-100%, -50%);
+    border-radius: 4px;
+}
+
+.list li:hover .delete-btn {
+    opacity: 1;
+}
+
+.form-control {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.form-control label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.form-control input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-control input:focus {
+    border-color: var(--accent-primary);
+}
+
+.btn-add-transaction {
+    background: linear-gradient(135deg, var(--accent-green), #27ae60);
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    margin-top: 1rem;
+}
+
+.btn-add-transaction:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(46, 204, 113, 0.4);
+}
+
+/* Expense Navigation */
+.expense-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+}
+
+.nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.nav-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn:hover:not(.active) {
+    color: white;
+}
+
+/* Updated List Item for Date */
+.list li {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+}
+
+.transaction-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+.transaction-date {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* Category Chips */
+.category-chips {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE 10+ */
+}
+
+.category-chips::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+}
+
+.chip:hover {
+    transform: translateY(-2px);
+}
+
+.chip.income {
+    border-color: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+}
+
+.chip.income:hover,
+.chip.income.active {
+    background: rgba(46, 204, 113, 0.2);
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.2);
+}
+
+.chip.expense {
+    border-color: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}
+
+.chip.expense:hover,
+.chip.expense.active {
+    background: rgba(231, 76, 60, 0.2);
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
 }

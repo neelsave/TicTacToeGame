@@ -36,6 +36,11 @@
                     <p>Stay hydrated</p>
                 </div>
 
+                <div class="app-card" onclick="showApp('expensetracker')">
+                    <div class="app-icon">💰</div>
+                    <h2>Expense Tracker</h2>
+                    <p>Manage your money</p>
+                </div>
             </div>
         </div>
     </div>
@@ -167,6 +172,63 @@
             </div>
 
             <button class="btn-reset-water" onclick="resetWater()">Reset Day</button>
+        </div>
+    </div>
+
+    <!-- Expense Tracker App -->
+    <div id="app-expensetracker" class="app-view hidden">
+        <button class="btn-home" onclick="showHome()">
+            <span>←</span> Home
+        </button>
+        <div class="expense-container">
+            <h1>Expense Tracker</h1>
+
+            <div class="expense-nav">
+                <button id="nav-dashboard" class="nav-btn active" onclick="showExpenseDashboard()">Dashboard</button>
+                <button id="nav-history" class="nav-btn" onclick="showExpenseHistory()">History</button>
+            </div>
+
+            <div id="expense-dashboard">
+                <div class="balance-container">
+                    <h4>Your Balance</h4>
+                    <h1 id="balance">₹0.00</h1>
+                </div>
+
+                <div class="inc-exp-container">
+                    <div class="inc-exp-card">
+                        <h4>Income</h4>
+                        <p id="money-plus" class="money plus">+₹0.00</p>
+                    </div>
+                    <div class="inc-exp-card">
+                        <h4>Expense</h4>
+                        <p id="money-minus" class="money minus">-₹0.00</p>
+                    </div>
+                </div>
+
+                <h3>Add new transaction</h3>
+                <form id="form" onsubmit="addTransaction(event)">
+                    <div id="category-chips" class="category-chips">
+                        <!-- Chips will be injected here -->
+                    </div>
+                    <div class="form-control">
+                        <label for="text">Text</label>
+                        <input type="text" id="text" placeholder="Enter text..." />
+                    </div>
+                    <div class="form-control">
+                        <label for="amount">Amount <br />
+                            (negative - expense, positive - income)</label>
+                        <input type="number" id="amount" placeholder="Enter amount..." />
+                    </div>
+                    <button class="btn-add-transaction">Add Transaction</button>
+                </form>
+            </div>
+
+            <div id="expense-history" class="hidden">
+                <h3>History</h3>
+                <ul id="list" class="list">
+                    <!-- Transactions will be added here -->
+                </ul>
+            </div>
         </div>
     </div>
 
