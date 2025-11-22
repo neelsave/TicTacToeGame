@@ -32,8 +32,8 @@ const scoreValueO = document.getElementById('scoreValueO');
 const changePlayersBtn = document.getElementById('changePlayersBtn');
 
 let circleTurn;
-let playerXName = 'Player X';
-let playerOName = 'Player O';
+let playerXName = '';
+let playerOName = '';
 let scoreX = 0;
 let scoreO = 0;
 
