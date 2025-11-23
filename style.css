@@ -27,6 +27,10 @@
     padding: 0;
 }
 
+html {
+    min-height: 100%;
+}
+
 body {
     font-family: 'Outfit', sans-serif;
     background-color: var(--bg-color);
@@ -36,10 +40,10 @@ body {
     justify-content: center;
     align-items: flex-start;
     /* Changed from center to prevent top cutoff */
-    overflow-y: auto;
     position: relative;
     padding: 2rem 0;
     /* Add padding for breathing room */
+    /* Removed overflow-y: auto to let window scroll naturally */
 }
 
 /* Background Ambience */
