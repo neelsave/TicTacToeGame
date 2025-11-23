@@ -17,8 +17,8 @@ const c4WinningMessageElement = document.getElementById('c4WinningMessage');
 const c4WinningMessageTextElement = document.getElementById('c4WinningMessageText');
 
 function initConnect4() {
-    // Reset to setup screen
-    showC4Setup();
+    // Skip setup and start game directly
+    startConnect4Game(true);
 }
 
 function showC4Setup() {

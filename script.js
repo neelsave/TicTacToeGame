@@ -38,6 +38,21 @@ let playerOName = '';
 let scoreX = parseInt(localStorage.getItem('tictactoe_scoreX')) || 0;
 let scoreO = parseInt(localStorage.getItem('tictactoe_scoreO')) || 0;
 
+function initTicTacToe() {
+    // Default names if not set
+    if (!playerXName) playerXName = 'X';
+    if (!playerOName) playerOName = 'O';
+
+    scoreNameX.innerText = playerXName;
+    scoreNameO.innerText = playerOName;
+
+    // Skip setup screen
+    setupScreen.classList.add('hidden');
+    gameContainer.classList.remove('hidden');
+
+    startGame();
+}
+
 startGameBtn.addEventListener('click', handleStartGame);
 if (skipBtn) { // Added conditional listener for skipBtn
     skipBtn.addEventListener('click', () => {
@@ -460,3 +475,4 @@ window.showExpenseHistory = showExpenseHistory;
 // Expose navigation to global scope
 window.showApp = showApp;
 window.showHome = showHome;
+window.initTicTacToe = initTicTacToe;
