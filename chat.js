@@ -17,7 +17,12 @@ function initChat() {
     // Initialize Socket.io if not already done
     if (!socket && typeof io !== 'undefined') {
         try {
-            socket = io();
+            // PRODUCTION: Replace this URL with your Render/Glitch server URL
+            // DEVELOPMENT: Keep it empty to use localhost or auto-discovery
+            // Example: const SERVER_URL = 'https://my-game-app.onrender.com';
+            const SERVER_URL = '';
+
+            socket = io(SERVER_URL);
 
             // Listen for incoming messages
             socket.on('chat-message', (msg) => {
