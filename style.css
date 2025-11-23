@@ -574,10 +574,32 @@ body {
 
 #currentDate {
     color: #94a3b8;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+/* Section Divider */
+.section-divider {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2rem 0 1rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    flex: 1;
+    margin: 0 1rem;
 }
 
 .progress-circle-container {
@@ -658,9 +680,26 @@ body {
 
 .water-btn-visual:hover {
     background: rgba(56, 189, 248, 0.2);
-    transform: translateY(-3px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.app-card.disabled {
+    opacity: 0.2;
+    /* Significantly reduced opacity */
+    filter: grayscale(100%) blur(1px);
+    /* Added blur for "unavailable" feel */
+    cursor: not-allowed;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.02);
+    /* Darker background */
+    border-color: transparent;
+}
+
+.app-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .water-icon {

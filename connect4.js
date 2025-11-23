@@ -6,14 +6,48 @@ const PLAYER_2_CLASS = 'player2'; // Yellow
 let c4Board = [];
 let c4CurrentPlayer = 1;
 let c4GameActive = false;
+let c4P1Name = "Red";
+let c4P2Name = "Yellow";
 
 const c4BoardElement = document.getElementById('c4Board');
 const c4StatusDisplay = document.getElementById('c4StatusDisplay');
+const c4SetupScreen = document.getElementById('c4SetupScreen');
+const c4GameContainer = document.getElementById('c4GameContainer');
+const c4WinningMessageElement = document.getElementById('c4WinningMessage');
+const c4WinningMessageTextElement = document.getElementById('c4WinningMessageText');
 
 function initConnect4() {
+    // Reset to setup screen
+    showC4Setup();
+}
+
+function showC4Setup() {
+    c4SetupScreen.classList.remove('hidden');
+    c4GameContainer.classList.add('hidden');
+    c4WinningMessageElement.classList.remove('show');
+}
+
+function startConnect4Game(skip = false) {
+    if (!skip) {
+        const p1Input = document.getElementById('c4Player1Name').value;
+        const p2Input = document.getElementById('c4Player2Name').value;
+        c4P1Name = p1Input.trim() || "Red";
+        c4P2Name = p2Input.trim() || "Yellow";
+    } else {
+        c4P1Name = "Red";
+        c4P2Name = "Yellow";
+    }
+
+    c4SetupScreen.classList.add('hidden');
+    c4GameContainer.classList.remove('hidden');
+    resetConnect4Board();
+}
+
+function resetConnect4Board() {
     c4Board = Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(0));
     c4CurrentPlayer = 1;
     c4GameActive = true;
+    c4WinningMessageElement.classList.remove('show');
     renderC4BoardInitial();
     updateC4Status();
 }
@@ -46,22 +80,17 @@ function handleC4Click(col) {
             if (c4CurrentPlayer === 1) piece.classList.add(PLAYER_1_CLASS);
             else piece.classList.add(PLAYER_2_CLASS);
 
-            // Set drop distance for animation (row index * 60px roughly)
-            // Actually, we want it to fall from the top of the board.
-            // The piece is inside the cell. 
-            // If row is 0, it falls 0 distance? No, it falls from above.
-            // Let's say it falls from "Row -1".
-            // Distance = (Row Index + 1) * 60px (approx cell + gap)
+            // Set drop distance for animation
             piece.style.setProperty('--fall-distance', `-${(r + 1) * 60}px`);
 
             cell.appendChild(piece);
 
             if (checkC4Win(r, col)) {
                 c4GameActive = false;
-                c4StatusDisplay.innerText = `Player ${c4CurrentPlayer} Wins!`;
+                endC4Game(false);
             } else if (checkC4Draw()) {
                 c4GameActive = false;
-                c4StatusDisplay.innerText = "It's a Draw!";
+                endC4Game(true);
             } else {
                 c4CurrentPlayer = c4CurrentPlayer === 1 ? 2 : 1;
                 updateC4Status();
@@ -72,7 +101,19 @@ function handleC4Click(col) {
 }
 
 function updateC4Status() {
-    c4StatusDisplay.innerHTML = `Player <span class="${c4CurrentPlayer === 1 ? 'text-red' : 'text-yellow'}">${c4CurrentPlayer === 1 ? 'Red' : 'Yellow'}</span>'s Turn`;
+    const currentPlayerName = c4CurrentPlayer === 1 ? c4P1Name : c4P2Name;
+    const colorClass = c4CurrentPlayer === 1 ? 'text-red' : 'text-yellow';
+    c4StatusDisplay.innerHTML = `<span class="${colorClass}">${currentPlayerName}</span>'s Turn`;
+}
+
+function endC4Game(draw) {
+    if (draw) {
+        c4WinningMessageTextElement.innerText = "It's a Draw!";
+    } else {
+        const winnerName = c4CurrentPlayer === 1 ? c4P1Name : c4P2Name;
+        c4WinningMessageTextElement.innerText = `${winnerName} Wins!`;
+    }
+    c4WinningMessageElement.classList.add('show');
 }
 
 function checkC4Win(row, col) {
@@ -95,10 +136,12 @@ function checkC4Win(row, col) {
     }
 
     // Diagonal /
-    // (This is a simplified check, iterating all diagonals is safer but more code. 
-    // Let's do a robust check around the placed piece)
-    return checkDirection(row, col, 1, 1) || // /
-        checkDirection(row, col, 1, -1);  // \
+    if (checkDirection(row, col, 1, 1)) return true;
+
+    // Diagonal \
+    if (checkDirection(row, col, 1, -1)) return true;
+
+    return false;
 }
 
 function checkDirection(row, col, rowDir, colDir) {
@@ -132,3 +175,6 @@ function checkC4Draw() {
 
 // Expose to global
 window.initConnect4 = initConnect4;
+window.startConnect4Game = startConnect4Game;
+window.resetConnect4Board = resetConnect4Board;
+window.showC4Setup = showC4Setup;
