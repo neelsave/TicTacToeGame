@@ -35,8 +35,8 @@ const skipBtn = document.getElementById('skipBtn'); // Added skipBtn
 let circleTurn;
 let playerXName = '';
 let playerOName = '';
-let scoreX = 0;
-let scoreO = 0;
+let scoreX = parseInt(localStorage.getItem('tictactoe_scoreX')) || 0;
+let scoreO = parseInt(localStorage.getItem('tictactoe_scoreO')) || 0;
 
 startGameBtn.addEventListener('click', handleStartGame);
 if (skipBtn) { // Added conditional listener for skipBtn
@@ -122,6 +122,8 @@ function endGame(draw) {
 function updateScoreboard() {
     scoreValueX.innerText = scoreX;
     scoreValueO.innerText = scoreO;
+    localStorage.setItem('tictactoe_scoreX', scoreX);
+    localStorage.setItem('tictactoe_scoreO', scoreO);
 }
 
 function isDraw() {
@@ -210,6 +212,7 @@ if (waterCircle && excessCircle) {
 
     function addWater(amount) {
         currentWater += amount;
+        localStorage.setItem('water_currentWater', currentWater);
         updateWaterUI();
     }
 
@@ -223,6 +226,7 @@ if (waterCircle && excessCircle) {
 
     function resetWater() {
         currentWater = 0;
+        localStorage.setItem('water_currentWater', currentWater);
         updateWaterUI();
     }
 
@@ -273,6 +277,7 @@ if (waterCircle && excessCircle) {
 
     // Initialize Date
     updateDate();
+    updateWaterUI(); // Update UI on load to reflect persisted data
 
     // Expose functions to global scope for onclick handlers
     window.addWater = addWater;
@@ -330,7 +335,7 @@ function selectCategory(name, type, event) { // Accept event
 }
 
 // Dummy transactions for testing or empty initially
-let transactions = [];
+let transactions = JSON.parse(localStorage.getItem('expense_transactions')) || [];
 
 function addTransaction(e) {
     e.preventDefault();
@@ -355,6 +360,7 @@ function addTransaction(e) {
 
         addTransactionDOM(transaction);
         updateValues();
+        updateLocalStorage();
 
         text.value = '';
         amount.value = '';
@@ -413,7 +419,12 @@ function updateValues() {
 
 function removeTransaction(id) {
     transactions = transactions.filter(transaction => transaction.id !== id);
+    updateLocalStorage();
     initExpenseTracker();
+}
+
+function updateLocalStorage() {
+    localStorage.setItem('expense_transactions', JSON.stringify(transactions));
 }
 
 function initExpenseTracker() {
