@@ -124,6 +124,13 @@
                     <p>Classic Arcade</p>
                 </div>
 
+                <!-- 9. Global Chat -->
+                <div class="app-card" onclick="showApp('chat'); initChat()">
+                    <div class="app-icon">💬</div>
+                    <h2>Global Chat</h2>
+                    <p>Join the conversation</p>
+                </div>
+
                 <!-- Section Divider -->
                 <div class="section-divider">
                     <span>In Development</span>
@@ -351,6 +358,40 @@
             </div>
             <div class="controls">
                 <button class="btn-reset" onclick="initPong()">Restart Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Chat App -->
+    <div id="app-chat" class="app-view hidden">
+        <button class="btn-home" onclick="showHome()">
+            <span>←</span> Home
+        </button>
+        <div class="game-container chat-container">
+            <header class="game-header chat-header">
+                <h1>Global Chat</h1>
+                <div class="chat-controls">
+                    <span class="user-display">Playing as: <strong id="chatCurrentName">Guest</strong></span>
+                    <button class="btn-secondary btn-sm" onclick="changeChatName()">Change Name</button>
+                    <button class="btn-secondary btn-sm" onclick="clearChat()"
+                        style="color: #ef4444; border-color: #ef4444;">Clear</button>
+                </div>
+            </header>
+
+            <div class="chat-history" id="chatHistory">
+                <!-- Messages will appear here -->
+                <div class="chat-placeholder">No messages yet. Say hello!</div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+                <button class="btn-send" onclick="sendMessage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -831,8 +872,9 @@
     <script src="reaction.js"></script>
     <script src="dotsboxes.js"></script>
     <script src="simon.js"></script>
-    <script src="diceduel.js"></script>
-    <script src="timetracker.js"></script>
+    <script src="pong.js"></script>
+    <script src="chat.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
