@@ -22,24 +22,41 @@ function initConnect4() {
 }
 
 function showC4Setup() {
-    c4SetupScreen.classList.remove('hidden');
-    c4GameContainer.classList.add('hidden');
-    c4WinningMessageElement.classList.remove('show');
+    if (c4SetupScreen) {
+        c4SetupScreen.classList.remove('hidden');
+        c4SetupScreen.style.display = 'flex'; // Restore flex
+    }
+    if (c4GameContainer) {
+        c4GameContainer.classList.add('hidden');
+        c4GameContainer.style.display = 'none';
+    }
+    if (c4WinningMessageElement) {
+        c4WinningMessageElement.classList.remove('show');
+    }
 }
 
 function startConnect4Game(skip = false) {
     if (!skip) {
-        const p1Input = document.getElementById('c4Player1Name').value;
-        const p2Input = document.getElementById('c4Player2Name').value;
-        c4P1Name = p1Input.trim() || "Red";
-        c4P2Name = p2Input.trim() || "Yellow";
+        const p1Input = document.getElementById('c4Player1Name');
+        const p2Input = document.getElementById('c4Player2Name');
+
+        if (p1Input) c4P1Name = p1Input.value.trim() || "Red";
+        if (p2Input) c4P2Name = p2Input.value.trim() || "Yellow";
     } else {
         c4P1Name = "Red";
         c4P2Name = "Yellow";
     }
 
-    c4SetupScreen.classList.add('hidden');
-    c4GameContainer.classList.remove('hidden');
+    if (c4SetupScreen) {
+        c4SetupScreen.classList.add('hidden');
+        c4SetupScreen.style.display = 'none'; // Force hide
+    }
+
+    if (c4GameContainer) {
+        c4GameContainer.classList.remove('hidden');
+        c4GameContainer.style.display = 'block'; // Force show (or flex if needed, but block is fine for container)
+    }
+
     resetConnect4Board();
 }
 

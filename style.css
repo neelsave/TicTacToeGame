@@ -257,21 +257,22 @@ body {
 
 /* Setup Screen */
 .setup-screen {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.95);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 20;
-    backdrop-filter: blur(10px);
+    z-index: 50;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(5px);
     transition: opacity 0.5s ease;
 }
 
 .setup-screen.hidden {
+    display: none !important;
     opacity: 0;
     pointer-events: none;
 }
@@ -686,9 +687,9 @@ body {
 }
 
 .app-card.disabled {
-    opacity: 0.2;
+    opacity: 0.2 !important;
     /* Significantly reduced opacity */
-    filter: grayscale(100%) blur(1px);
+    filter: grayscale(100%) blur(1px) !important;
     /* Added blur for "unavailable" feel */
     cursor: not-allowed;
     pointer-events: none;
@@ -697,9 +698,13 @@ body {
     border-color: transparent;
 }
 
-.app-card.disabled:hover {
-    transform: none;
-    box-shadow: none;
+.app-card.disabled:hover,
+.app-card.disabled:active,
+.app-card.disabled:focus {
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.2 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
 }
 
 .water-icon {
