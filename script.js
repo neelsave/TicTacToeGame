@@ -181,7 +181,16 @@ function updateStatusDisplay() {
 }
 
 // --- App Navigation ---
+// --- App Navigation ---
+let homeScrollPosition = 0;
+
 function showApp(appName) {
+    // Save scroll position before hiding home
+    const homeScreen = document.getElementById('home-screen');
+    if (homeScreen && !homeScreen.classList.contains('hidden')) {
+        homeScrollPosition = window.scrollY;
+    }
+
     // Hide all views
     document.querySelectorAll('.app-view').forEach(view => {
         view.classList.add('hidden');
@@ -191,6 +200,8 @@ function showApp(appName) {
     const appView = document.getElementById(`app-${appName}`);
     if (appView) {
         appView.classList.remove('hidden');
+        // Scroll to top of the app
+        window.scrollTo(0, 0);
     }
 }
 
@@ -198,7 +209,14 @@ function showHome() {
     document.querySelectorAll('.app-view').forEach(view => {
         view.classList.add('hidden');
     });
-    document.getElementById('home-screen').classList.remove('hidden');
+    const homeScreen = document.getElementById('home-screen');
+    homeScreen.classList.remove('hidden');
+
+    // Restore scroll position
+    // We need a slight timeout to ensure the browser has re-rendered the layout
+    setTimeout(() => {
+        window.scrollTo(0, homeScrollPosition);
+    }, 0);
 }
 
 // --- Water Tracker Logic ---
