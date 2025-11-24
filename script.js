@@ -212,7 +212,9 @@ function initSocket() {
         });
 
         socket.on('reset-board', () => {
+            onlineTurn = 'X'; // Reset turn to X
             startGame();
+            updateStatusDisplay();
         });
     }
 }
