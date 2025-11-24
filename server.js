@@ -15,9 +15,12 @@ app.use(express.static(__dirname));
 // Socket.io connection handling
 const rooms = {};
 const c4Rooms = {};
+let connectedPlayers = 0;
 
 io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    connectedPlayers++;
+    io.emit('update-player-count', connectedPlayers);
+    console.log(`User connected: ${socket.id}. Total: ${connectedPlayers}`);
 
     // --- Chat Events ---
     socket.on('chat-message', (msg) => {
@@ -205,7 +208,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
+        connectedPlayers--;
+        io.emit('update-player-count', connectedPlayers);
+        console.log(`User disconnected: ${socket.id}. Total: ${connectedPlayers}`);
         // Handle cleanup for Tic Tac Toe
         for (const roomId in rooms) {
             const room = rooms[roomId];

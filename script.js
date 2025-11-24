@@ -98,6 +98,59 @@ function handleChangePlayers() {
     updateScoreboard();
 }
 
+// --- Global Presence & Username ---
+let globalUsername = 'Guest';
+const globalUsernameKey = 'neel_creations_username';
+
+function initGlobalPresence() {
+    // 1. Load/Generate Username
+    const stored = localStorage.getItem(globalUsernameKey);
+    if (stored) {
+        globalUsername = stored;
+    } else {
+        globalUsername = 'Guest' + Math.floor(Math.random() * 10000);
+        localStorage.setItem(globalUsernameKey, globalUsername);
+    }
+    updateGlobalStatusUI();
+
+    // 2. Connect Socket for Player Count
+    if (typeof io !== 'undefined') {
+        if (!socket) {
+            const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
+            socket = io(SERVER_URL);
+        }
+
+        socket.on('update-player-count', (count) => {
+            const el = document.getElementById('onlineCountDisplay');
+            if (el) el.innerText = `Online: ${count}`;
+        });
+    }
+}
+
+function updateGlobalStatusUI() {
+    const el = document.getElementById('globalUsernameDisplay');
+    if (el) el.innerText = `You: ${globalUsername}`;
+}
+
+function changeGlobalName() {
+    const newName = prompt("Enter your display name:", globalUsername);
+    if (newName && newName.trim() !== "") {
+        globalUsername = newName.trim();
+        localStorage.setItem(globalUsernameKey, globalUsername);
+        updateGlobalStatusUI();
+
+        // Also update chat name if it exists
+        if (typeof chatUsername !== 'undefined') {
+            chatUsername = globalUsername;
+            localStorage.setItem('chat_username', globalUsername); // Sync keys if needed
+            if (typeof updateChatHeader === 'function') updateChatHeader();
+        }
+    }
+}
+
+// Call immediately
+initGlobalPresence();
+
 // --- Online Variables ---
 let isOnline = false;
 let socket;

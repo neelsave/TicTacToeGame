@@ -23,6 +23,11 @@
         <div class="home-content">
             <div class="brand-logo">Neel Creations</div>
             <h1>App Center</h1>
+            <div id="globalStatus" class="global-status">
+                <span id="onlineCountDisplay">Online: 1</span>
+                <span class="separator">|</span>
+                <span id="globalUsernameDisplay" onclick="changeGlobalName()">You: Guest</span>
+            </div>
             <div class="app-grid">
                 <!-- 1. Tic Tac Toe -->
                 <div class="app-card" onclick="showApp('tictactoe'); initTicTacToe()">
