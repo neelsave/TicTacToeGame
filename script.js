@@ -62,9 +62,21 @@ if (skipBtn) { // Added conditional listener for skipBtn
         handleStartGame();
     });
 }
-restartButton.addEventListener('click', startGame);
-resetButton.addEventListener('click', startGame);
+    });
+}
+restartButton.addEventListener('click', handleRestart);
+resetButton.addEventListener('click', handleRestart); // Use same handler for both
 changePlayersBtn.addEventListener('click', handleChangePlayers);
+
+function handleRestart() {
+    if (isOnline) {
+        if (socket && currentRoomId) {
+            socket.emit('reset-game', currentRoomId);
+        }
+    } else {
+        startGame();
+    }
+}
 
 function handleStartGame() {
     playerXName = playerXInput.value || 'X';
