@@ -6,10 +6,12 @@ let chatUsername = 'Guest';
 let socket; // Socket.io instance
 
 function initChat() {
+    console.log("initChat called!");
     loadChatUsername();
 
     // Diagnostic: Check Protocol
     if (window.location.protocol === 'file:') {
+        console.error("Running from file protocol!");
         updateConnectionStatus(false, "Error: You are opening this as a file. Please use http://localhost:3000");
         return;
     }
