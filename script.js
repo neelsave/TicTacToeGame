@@ -138,7 +138,57 @@ function initGlobalPresence() {
             if (el) el.innerText = `Online: ${count}`;
         });
     }
+
+    // 3. Initialize Google Sign-In
+    // REPLACE 'YOUR_GOOGLE_CLIENT_ID' WITH YOUR ACTUAL CLIENT ID
+    const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
+
+    if (window.google) {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+            document.getElementById("googleBtnContainer"),
+            { theme: "outline", size: "medium", shape: "pill" }  // Customization attributes
+        );
+        // google.accounts.id.prompt(); // also display the One Tap dialog
+    }
 }
+
+function handleCredentialResponse(response) {
+    console.log("Encoded JWT ID token: " + response.credential);
+    const responsePayload = decodeJwtResponse(response.credential);
+
+    console.log("ID: " + responsePayload.sub);
+    console.log('Full Name: ' + responsePayload.name);
+    console.log('Given Name: ' + responsePayload.given_name);
+    console.log('Family Name: ' + responsePayload.family_name);
+    console.log("Image URL: " + responsePayload.picture);
+    console.log("Email: " + responsePayload.email);
+
+    // Update Global State
+    globalUsername = responsePayload.name;
+    localStorage.setItem(globalUsernameKey, globalUsername);
+
+    // Update UI
+    updateGlobalStatusUI();
+
+    // Hide Google Button, Show Name
+    document.getElementById('googleBtnContainer').style.display = 'none';
+    document.getElementById('globalUsernameDisplay').classList.remove('hidden');
+}
+
+function decodeJwtResponse(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 
 function updateGlobalStatusUI() {
     const el = document.getElementById('globalUsernameDisplay');

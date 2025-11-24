@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -26,7 +27,8 @@
             <div id="globalStatus" class="global-status">
                 <span id="onlineCountDisplay">Online: ...</span>
                 <span class="separator">|</span>
-                <span id="globalUsernameDisplay" onclick="changeGlobalName()">You: Guest</span>
+                <div id="googleBtnContainer"></div> <!-- Google Button -->
+                <span id="globalUsernameDisplay" onclick="changeGlobalName()" class="hidden">You: Guest</span>
             </div>
             <div class="app-grid">
                 <!-- 1. Tic Tac Toe -->
