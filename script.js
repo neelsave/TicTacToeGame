@@ -86,15 +86,159 @@ function handleChangePlayers() {
     updateScoreboard();
 }
 
+// --- Online Variables ---
+let isOnline = false;
+let socket;
+let currentRoomId = null;
+let myPlayer = null; // 'X' or 'O'
+let onlineTurn = 'X'; // Server source of truth
+
+// --- Mode Selection ---
+const modeLocalBtn = document.getElementById('modeLocalBtn');
+const modeOnlineBtn = document.getElementById('modeOnlineBtn');
+const localSetup = document.getElementById('localSetup');
+const onlineSetup = document.getElementById('onlineSetup');
+const roomIdInput = document.getElementById('roomIdInput');
+const createRoomBtn = document.getElementById('createRoomBtn');
+const joinRoomBtn = document.getElementById('joinRoomBtn');
+const onlineStatus = document.getElementById('onlineStatus');
+
+if (modeLocalBtn && modeOnlineBtn) {
+    modeLocalBtn.addEventListener('click', () => setMode('local'));
+    modeOnlineBtn.addEventListener('click', () => setMode('online'));
+}
+
+function setMode(mode) {
+    if (mode === 'local') {
+        isOnline = false;
+        modeLocalBtn.classList.add('active');
+        modeOnlineBtn.classList.remove('active');
+        localSetup.classList.remove('hidden');
+        onlineSetup.classList.add('hidden');
+    } else {
+        isOnline = true;
+        modeLocalBtn.classList.remove('active');
+        modeOnlineBtn.classList.add('active');
+        localSetup.classList.add('hidden');
+        onlineSetup.classList.remove('hidden');
+        initSocket();
+    }
+}
+
+function initSocket() {
+    if (!socket && typeof io !== 'undefined') {
+        // Use same URL strategy as chat
+        // PRODUCTION: Replace with your Render URL
+        const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
+        // const SERVER_URL = ''; // For localhost
+
+        socket = io(SERVER_URL);
+
+        socket.on('room-created', (id) => {
+            onlineStatus.innerText = `Room Created: ${id}. Waiting for player...`;
+            onlineStatus.style.color = '#4ade80';
+            currentRoomId = id;
+        });
+
+        socket.on('room-joined', (id) => {
+            onlineStatus.innerText = `Joined Room: ${id}`;
+            currentRoomId = id;
+        });
+
+        socket.on('room-error', (msg) => {
+            onlineStatus.innerText = msg;
+            onlineStatus.style.color = '#ef4444';
+        });
+
+        socket.on('player-assigned', (role) => {
+            myPlayer = role;
+            console.log("Assigned role:", role);
+        });
+
+        socket.on('game-start', ({ turn }) => {
+            setupScreen.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            onlineTurn = turn;
+            playerXName = 'Player X'; // Generic for online
+            playerOName = 'Player O';
+            scoreNameX.innerText = playerXName;
+            scoreNameO.innerText = playerOName;
+            startGame(); // Reuse existing start, but we will override click handler
+            updateStatusDisplay();
+        });
+
+        socket.on('update-board', ({ board, turn }) => {
+            onlineTurn = turn;
+            circleTurn = turn === 'O'; // Sync local turn var
+            updateBoardFromOnline(board);
+            updateStatusDisplay();
+
+            // Check win locally to show message
+            if (checkWin(X_CLASS)) endGame(false, 'X');
+            else if (checkWin(O_CLASS)) endGame(false, 'O');
+            else if (isDraw()) endGame(true);
+        });
+
+        socket.on('player-left', () => {
+            alert("Opponent disconnected.");
+            location.reload(); // Simple reset
+        });
+
+        socket.on('reset-board', () => {
+            startGame();
+        });
+    }
+}
+
+if (createRoomBtn) {
+    createRoomBtn.addEventListener('click', () => {
+        const id = roomIdInput.value.trim();
+        if (id && socket) {
+            socket.emit('create-room', id);
+        } else {
+            onlineStatus.innerText = "Enter a Room ID";
+        }
+    });
+}
+
+if (joinRoomBtn) {
+    joinRoomBtn.addEventListener('click', () => {
+        const id = roomIdInput.value.trim();
+        if (id && socket) {
+            socket.emit('join-room', id);
+        } else {
+            onlineStatus.innerText = "Enter a Room ID";
+        }
+    });
+}
+
+function updateBoardFromOnline(serverBoard) {
+    tileElements.forEach((tile, index) => {
+        const val = serverBoard[index];
+        tile.classList.remove(X_CLASS, O_CLASS, 'taken');
+        tile.innerText = '';
+
+        if (val === 'X') {
+            tile.classList.add(X_CLASS, 'taken');
+            tile.innerText = 'X';
+        } else if (val === 'O') {
+            tile.classList.add(O_CLASS, 'taken');
+            tile.innerText = 'O';
+        }
+    });
+}
+
+// --- Modified Game Logic ---
+
 function startGame() {
-    circleTurn = false;
+    circleTurn = false; // X starts
     tileElements.forEach(tile => {
         tile.classList.remove(X_CLASS);
         tile.classList.remove(O_CLASS);
         tile.classList.remove('taken');
         tile.textContent = '';
         tile.removeEventListener('click', handleClick);
-        tile.addEventListener('click', handleClick, { once: true });
+        tile.addEventListener('click', handleClick); // Remove {once: true} to handle invalid clicks manually
     });
     setBoardHoverClass();
     winningMessageElement.classList.remove('show');
@@ -103,6 +247,22 @@ function startGame() {
 
 function handleClick(e) {
     const tile = e.target;
+
+    // Online Check
+    if (isOnline) {
+        // Prevent move if not my turn or tile taken
+        if (onlineTurn !== myPlayer) return;
+        if (tile.classList.contains('taken')) return;
+
+        // Emit move
+        const index = [...tileElements].indexOf(tile);
+        socket.emit('make-move', { roomId: currentRoomId, index, player: myPlayer });
+        return; // Wait for server update
+    }
+
+    // Local Logic (Existing)
+    if (tile.classList.contains('taken')) return; // Safety
+
     const currentClass = circleTurn ? O_CLASS : X_CLASS;
     placeMark(tile, currentClass);
 
@@ -117,19 +277,23 @@ function handleClick(e) {
     }
 }
 
-function endGame(draw) {
+function endGame(draw, winnerOverride) {
     if (draw) {
         winningMessageTextElement.innerText = 'Draw!';
     } else {
-        const winnerName = circleTurn ? playerOName : playerXName;
+        let winnerName;
+        if (isOnline && winnerOverride) {
+            winnerName = winnerOverride === 'X' ? "Player X" : "Player O";
+        } else {
+            winnerName = circleTurn ? playerOName : playerXName;
+        }
         winningMessageTextElement.innerText = `${winnerName} Wins!`;
 
-        if (circleTurn) {
-            scoreO++;
-        } else {
-            scoreX++;
+        if (!isOnline) { // Only update local score for local games
+            if (circleTurn) scoreO++;
+            else scoreX++;
+            updateScoreboard();
         }
-        updateScoreboard();
     }
     winningMessageElement.classList.add('show');
 }
@@ -176,8 +340,15 @@ function setBoardHoverClass() {
 }
 
 function updateStatusDisplay() {
-    const currentPlayerName = circleTurn ? playerOName : playerXName;
-    statusDisplay.innerHTML = `<span class="current-player" style="color: var(--accent-${circleTurn ? 'o' : 'x'})">${currentPlayerName}</span>'s Turn`;
+    if (isOnline) {
+        const isMyTurn = onlineTurn === myPlayer;
+        statusDisplay.innerHTML = isMyTurn ?
+            `<span style="color: #4ade80">Your Turn (${myPlayer})</span>` :
+            `<span style="color: #ef4444">Opponent's Turn</span>`;
+    } else {
+        const currentPlayerName = circleTurn ? playerOName : playerXName;
+        statusDisplay.innerHTML = `<span class="current-player" style="color: var(--accent-${circleTurn ? 'o' : 'x'})">${currentPlayerName}</span>'s Turn`;
+    }
 }
 
 // --- App Navigation ---

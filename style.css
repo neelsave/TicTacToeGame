@@ -2420,3 +2420,39 @@ body {
 .btn-send:active {
     transform: scale(0.95);
 }
+
+/* Online Mode Styles */
+.mode-selection {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+}
+
+.btn-mode {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-mode.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+.online-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.status-text {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 1.2em;
+}

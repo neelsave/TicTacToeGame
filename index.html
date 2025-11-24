@@ -209,16 +209,39 @@
         <div class="setup-screen" id="setupScreen">
             <div class="setup-content">
                 <h1>Tic Tac Toe</h1>
-                <div class="input-group">
-                    <label for="playerXName">Player X Name</label>
-                    <input type="text" id="playerXName" placeholder="Enter Name">
+
+                <!-- Mode Selection -->
+                <div class="mode-selection">
+                    <button id="modeLocalBtn" class="btn-mode active">Local Play</button>
+                    <button id="modeOnlineBtn" class="btn-mode">Play Online</button>
                 </div>
-                <div class="input-group">
-                    <label for="playerOName">Player O Name</label>
-                    <input type="text" id="playerOName" placeholder="Enter Name">
+
+                <!-- Local Setup -->
+                <div id="localSetup">
+                    <div class="input-group">
+                        <label for="playerXName">Player X Name</label>
+                        <input type="text" id="playerXName" placeholder="Enter Name">
+                    </div>
+                    <div class="input-group">
+                        <label for="playerOName">Player O Name</label>
+                        <input type="text" id="playerOName" placeholder="Enter Name">
+                    </div>
+                    <button id="startGameBtn" class="btn-start">Start Game</button>
+                    <button id="skipBtn" class="btn-skip">Skip</button>
                 </div>
-                <button id="startGameBtn" class="btn-start">Start Game</button>
-                <button id="skipBtn" class="btn-skip">Skip</button>
+
+                <!-- Online Setup -->
+                <div id="onlineSetup" class="hidden">
+                    <div class="input-group">
+                        <label for="roomIdInput">Room ID</label>
+                        <input type="text" id="roomIdInput" placeholder="e.g. ROOM1">
+                    </div>
+                    <div class="online-controls">
+                        <button id="createRoomBtn" class="btn-secondary">Create Room</button>
+                        <button id="joinRoomBtn" class="btn-start">Join Room</button>
+                    </div>
+                    <p id="onlineStatus" class="status-text"></p>
+                </div>
             </div>
         </div>
 
