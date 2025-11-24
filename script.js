@@ -46,11 +46,12 @@ function initTicTacToe() {
     scoreNameX.innerText = playerXName;
     scoreNameO.innerText = playerOName;
 
-    // Skip setup screen
-    setupScreen.classList.add('hidden');
-    gameContainer.classList.remove('hidden');
+    // Show setup screen so user can choose mode
+    setupScreen.classList.remove('hidden');
+    gameContainer.classList.add('hidden');
 
-    startGame();
+    // Reset mode to local by default
+    setMode('local');
 }
 
 startGameBtn.addEventListener('click', handleStartGame);
