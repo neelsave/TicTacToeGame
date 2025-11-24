@@ -141,9 +141,16 @@ function sendMessage() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
+    console.log("Attempting to send message:", message);
+
     // Emit to server
-    if (socket) {
+    if (socket && socket.connected) {
         socket.emit('chat-message', message);
+        console.log("Message emitted to server");
+    } else if (socket) {
+        console.warn("Socket exists but not connected. Buffering...");
+        socket.emit('chat-message', message);
+        alert("You are offline. Message will be sent when you reconnect.");
     } else {
         // Fallback if server not running (shouldn't happen if migrated)
         console.warn("Socket.io not connected");
