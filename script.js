@@ -120,7 +120,20 @@ function initGlobalPresence() {
             socket = io(SERVER_URL);
         }
 
+        socket.on('connect', () => {
+            console.log("Global socket connected");
+            const el = document.getElementById('onlineCountDisplay');
+            if (el) el.innerText = "Online: Connected";
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error("Global socket error:", err);
+            const el = document.getElementById('onlineCountDisplay');
+            if (el) el.innerText = "Online: Offline";
+        });
+
         socket.on('update-player-count', (count) => {
+            console.log("Player count received:", count);
             const el = document.getElementById('onlineCountDisplay');
             if (el) el.innerText = `Online: ${count}`;
         });
