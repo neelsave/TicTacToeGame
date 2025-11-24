@@ -29,6 +29,11 @@ const c4RoomIdInput = document.getElementById('c4RoomIdInput');
 const c4CreateRoomBtn = document.getElementById('c4CreateRoomBtn');
 const c4JoinRoomBtn = document.getElementById('c4JoinRoomBtn');
 const c4OnlineStatus = document.getElementById('c4OnlineStatus');
+const c4StartGameBtn = document.getElementById('c4StartGameBtn');
+
+if (c4StartGameBtn) {
+    c4StartGameBtn.addEventListener('click', () => startConnect4Game());
+}
 
 function initConnect4() {
     // Reset to setup screen
