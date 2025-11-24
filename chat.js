@@ -24,12 +24,15 @@ function initChat() {
     // Initialize Socket.io if not already done
     if (!chatSocket && typeof io !== 'undefined') {
         try {
-            // PRODUCTION: Replace this URL with your Render/Glitch server URL
-            // DEVELOPMENT: Keep it empty to use localhost or auto-discovery
-            // Example: const SERVER_URL = 'https://my-game-app.onrender.com';
-            const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
-
-            chatSocket = io(SERVER_URL);
+            // Reuse global socket from script.js if available
+            if (window.socket) {
+                console.log("Chat reusing global socket");
+                chatSocket = window.socket;
+            } else {
+                console.log("Chat creating new socket");
+                const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
+                chatSocket = io(SERVER_URL);
+            }
 
             // Listen for incoming messages
             chatSocket.on('chat-message', (msg) => {
