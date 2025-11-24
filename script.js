@@ -210,8 +210,11 @@ function changeGlobalName() {
     }
 }
 
-// Call immediately
-initGlobalPresence();
+// Call safely when loaded
+window.addEventListener('load', () => {
+    console.log("Script loaded, initializing global presence...");
+    initGlobalPresence();
+});
 
 // --- Online Variables ---
 let isOnline = false;
@@ -257,6 +260,8 @@ function initSocket() {
         // Use same URL strategy as chat
         // PRODUCTION: Replace with your Render URL
         const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
+        // console.log("Script.js is running!");
+        const GAME_DURATION = 30; // 30 seconds per gamelocalhost
         // const SERVER_URL = ''; // For localhost
 
         socket = io(SERVER_URL);
