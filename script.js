@@ -62,8 +62,7 @@ if (skipBtn) { // Added conditional listener for skipBtn
         handleStartGame();
     });
 }
-    });
-}
+
 restartButton.addEventListener('click', handleRestart);
 resetButton.addEventListener('click', handleRestart); // Use same handler for both
 changePlayersBtn.addEventListener('click', handleChangePlayers);
