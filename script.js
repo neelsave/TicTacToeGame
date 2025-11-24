@@ -140,8 +140,7 @@ function initGlobalPresence() {
     }
 
     // 3. Initialize Google Sign-In
-    // REPLACE 'YOUR_GOOGLE_CLIENT_ID' WITH YOUR ACTUAL CLIENT ID
-    const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
+    const GOOGLE_CLIENT_ID = '145158660390-fmgfp1o4928bq3d9h5cumukf1l3aqkno.apps.googleusercontent.com';
 
     if (window.google) {
         google.accounts.id.initialize({
