@@ -3,46 +3,51 @@ const chatUsernameKey = 'global_chat_username';
 
 let chatMessages = [];
 let chatUsername = 'Guest';
-let socket; // Socket.io instance
+let chatSocket; // Socket.io instance
 
 function initChat() {
-    console.log("initChat called!");
-    loadChatUsername();
+    try {
+        console.log("initChat called!");
+        loadChatUsername();
 
-    // Diagnostic: Check Protocol
-    if (window.location.protocol === 'file:') {
-        console.error("Running from file protocol!");
-        updateConnectionStatus(false, "Error: You are opening this as a file. Please use http://localhost:3000");
-        return;
+        // Diagnostic: Check Protocol
+        if (window.location.protocol === 'file:') {
+            console.error("Running from file protocol!");
+            updateConnectionStatus(false, "Error: You are opening this as a file. Please use http://localhost:3000");
+            return;
+        }
+    } catch (e) {
+        console.error("Critical Error in initChat:", e);
+        alert("Chat Error: " + e.message);
     }
 
     // Initialize Socket.io if not already done
-    if (!socket && typeof io !== 'undefined') {
+    if (!chatSocket && typeof io !== 'undefined') {
         try {
             // PRODUCTION: Replace this URL with your Render/Glitch server URL
             // DEVELOPMENT: Keep it empty to use localhost or auto-discovery
             // Example: const SERVER_URL = 'https://my-game-app.onrender.com';
             const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
 
-            socket = io(SERVER_URL);
+            chatSocket = io(SERVER_URL);
 
             // Listen for incoming messages
-            socket.on('chat-message', (msg) => {
+            chatSocket.on('chat-message', (msg) => {
                 chatMessages.push(msg);
                 renderChatMessages();
                 scrollToBottom();
             });
 
-            socket.on('connect', () => {
+            chatSocket.on('connect', () => {
                 updateConnectionStatus(true);
             });
 
-            socket.on('connect_error', (err) => {
+            chatSocket.on('connect_error', (err) => {
                 console.error("Socket connection error:", err);
                 updateConnectionStatus(false, "Connection Failed");
             });
 
-            socket.on('disconnect', () => {
+            chatSocket.on('disconnect', () => {
                 updateConnectionStatus(false, "Disconnected");
             });
         } catch (e) {
@@ -69,9 +74,9 @@ function initChat() {
     scrollToBottom();
 
     // Check initial status if socket exists
-    if (socket && socket.connected) {
+    if (chatSocket && chatSocket.connected) {
         updateConnectionStatus(true);
-    } else if (socket) {
+    } else if (chatSocket) {
         updateConnectionStatus(false, "Connecting...");
     }
 }
@@ -146,12 +151,12 @@ function sendMessage() {
     console.log("Attempting to send message:", message);
 
     // Emit to server
-    if (socket && socket.connected) {
-        socket.emit('chat-message', message);
+    if (chatSocket && chatSocket.connected) {
+        chatSocket.emit('chat-message', message);
         console.log("Message emitted to server");
-    } else if (socket) {
+    } else if (chatSocket) {
         console.warn("Socket exists but not connected. Buffering...");
-        socket.emit('chat-message', message);
+        chatSocket.emit('chat-message', message);
         alert("You are offline. Message will be sent when you reconnect.");
     } else {
         // Fallback if server not running (shouldn't happen if migrated)

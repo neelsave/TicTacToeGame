@@ -118,20 +118,108 @@ io.on('connection', (socket) => {
         }
     });
 
+
+
+    // --- Connect Four Events ---
+    const c4Rooms = {};
+
+    socket.on('join-c4', (roomId) => {
+        let room = c4Rooms[roomId];
+        if (!room) {
+            room = {
+                players: [],
+                board: Array(42).fill(null), // 6 rows * 7 cols
+                turn: 'Red',
+                gameActive: true
+            };
+            c4Rooms[roomId] = room;
+        }
+
+        if (room.players.includes(socket.id)) {
+            socket.emit('c4-error', 'You are already in this room');
+            return;
+        }
+
+        if (room.players.length >= 2) {
+            socket.emit('c4-error', 'Room is full');
+            return;
+        }
+
+        room.players.push(socket.id);
+        socket.join(roomId);
+
+        // Assign color
+        const color = room.players.length === 1 ? 'Red' : 'Yellow';
+        socket.emit('c4-player-assigned', color);
+
+        // Notify start
+        if (room.players.length === 2) {
+            io.to(roomId).emit('c4-start', { turn: room.turn });
+        }
+    });
+
+    socket.on('make-move-c4', ({ roomId, col, player }) => {
+        const room = c4Rooms[roomId];
+        if (!room || !room.gameActive) return;
+        if (room.turn !== player) return;
+
+        // Find lowest empty row in col
+        // Board index = row * 7 + col
+        // We need to update the board state on server
+        // Logic: Iterate from bottom row (5) up to 0
+        let rowToPlace = -1;
+        for (let r = 5; r >= 0; r--) {
+            const idx = r * 7 + col;
+            if (room.board[idx] === null) {
+                rowToPlace = r;
+                break;
+            }
+        }
+
+        if (rowToPlace === -1) return; // Column full
+
+        const index = rowToPlace * 7 + col;
+        room.board[index] = player;
+
+        // Switch turn
+        room.turn = room.turn === 'Red' ? 'Yellow' : 'Red';
+
+        io.to(roomId).emit('c4-update-board', {
+            row: rowToPlace,
+            col: col,
+            player: player,
+            turn: room.turn
+        });
+    });
+
+    socket.on('reset-c4', (roomId) => {
+        const room = c4Rooms[roomId];
+        if (room) {
+            room.board = Array(42).fill(null);
+            room.turn = 'Red';
+            room.gameActive = true;
+            io.to(roomId).emit('c4-reset');
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
-        // Handle cleanup
+        // Handle cleanup for Tic Tac Toe
         for (const roomId in rooms) {
             const room = rooms[roomId];
             if (room.players.includes(socket.id)) {
-                // Remove player
                 room.players = room.players.filter(id => id !== socket.id);
-                // Notify other player
                 io.to(roomId).emit('player-left');
-                // Delete room if empty
-                if (room.players.length === 0) {
-                    delete rooms[roomId];
-                }
+                if (room.players.length === 0) delete rooms[roomId];
+            }
+        }
+        // Handle cleanup for Connect Four
+        for (const roomId in c4Rooms) {
+            const room = c4Rooms[roomId];
+            if (room.players.includes(socket.id)) {
+                room.players = room.players.filter(id => id !== socket.id);
+                io.to(roomId).emit('c4-player-left');
+                if (room.players.length === 0) delete c4Rooms[roomId];
             }
         }
     });
