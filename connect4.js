@@ -8,6 +8,9 @@ let c4CurrentPlayer = 1;
 let c4GameActive = false;
 let c4P1Name = "Red";
 let c4P2Name = "Yellow";
+let c4IsOnline = false;
+let c4MyPlayer = null; // 'Red' or 'Yellow'
+let c4RoomId = null;
 
 const c4BoardElement = document.getElementById('c4Board');
 const c4StatusDisplay = document.getElementById('c4StatusDisplay');
@@ -16,15 +19,26 @@ const c4GameContainer = document.getElementById('c4GameContainer');
 const c4WinningMessageElement = document.getElementById('c4WinningMessage');
 const c4WinningMessageTextElement = document.getElementById('c4WinningMessageText');
 
+// UI Elements for Setup
+const c4ModeLocalBtn = document.getElementById('c4ModeLocalBtn');
+const c4ModeOnlineBtn = document.getElementById('c4ModeOnlineBtn');
+const c4LocalSetup = document.getElementById('c4LocalSetup');
+const c4OnlineSetup = document.getElementById('c4OnlineSetup');
+const c4RoomIdInput = document.getElementById('c4RoomIdInput');
+const c4CreateRoomBtn = document.getElementById('c4CreateRoomBtn');
+const c4JoinRoomBtn = document.getElementById('c4JoinRoomBtn');
+const c4OnlineStatus = document.getElementById('c4OnlineStatus');
+
 function initConnect4() {
-    // Skip setup and start game directly
-    startConnect4Game(true);
+    // Reset to setup screen
+    showC4Setup();
+    setC4Mode('local');
 }
 
 function showC4Setup() {
     if (c4SetupScreen) {
         c4SetupScreen.classList.remove('hidden');
-        c4SetupScreen.style.display = 'flex'; // Restore flex
+        c4SetupScreen.style.display = 'flex';
     }
     if (c4GameContainer) {
         c4GameContainer.classList.add('hidden');
@@ -35,26 +49,143 @@ function showC4Setup() {
     }
 }
 
-function startConnect4Game(skip = false) {
-    if (!skip) {
-        const p1Input = document.getElementById('c4Player1Name');
-        const p2Input = document.getElementById('c4Player2Name');
+// Mode Switching
+if (c4ModeLocalBtn && c4ModeOnlineBtn) {
+    c4ModeLocalBtn.addEventListener('click', () => setC4Mode('local'));
+    c4ModeOnlineBtn.addEventListener('click', () => setC4Mode('online'));
+}
 
-        if (p1Input) c4P1Name = p1Input.value.trim() || "Red";
-        if (p2Input) c4P2Name = p2Input.value.trim() || "Yellow";
+function setC4Mode(mode) {
+    if (mode === 'local') {
+        c4IsOnline = false;
+        c4ModeLocalBtn.classList.add('active');
+        c4ModeOnlineBtn.classList.remove('active');
+        c4LocalSetup.classList.remove('hidden');
+        c4OnlineSetup.classList.add('hidden');
     } else {
-        c4P1Name = "Red";
-        c4P2Name = "Yellow";
+        c4IsOnline = true;
+        c4ModeLocalBtn.classList.remove('active');
+        c4ModeOnlineBtn.classList.add('active');
+        c4LocalSetup.classList.add('hidden');
+        c4OnlineSetup.classList.remove('hidden');
+        initC4Socket();
+    }
+}
+
+// Online Controls
+if (c4CreateRoomBtn) {
+    c4CreateRoomBtn.addEventListener('click', () => {
+        const roomId = c4RoomIdInput.value.trim() || 'ROOM-' + Math.floor(Math.random() * 1000);
+        c4RoomIdInput.value = roomId;
+        joinC4Room(roomId);
+    });
+}
+
+if (c4JoinRoomBtn) {
+    c4JoinRoomBtn.addEventListener('click', () => {
+        const roomId = c4RoomIdInput.value.trim();
+        if (roomId) joinC4Room(roomId);
+        else alert("Please enter a Room ID");
+    });
+}
+
+// Socket Logic
+function initC4Socket() {
+    if (typeof io === 'undefined') return;
+
+    // Reuse global socket from script.js if available, else create
+    if (!socket) {
+        socket = io('https://tictactoegame-zyid.onrender.com');
+    }
+
+    // Remove old listeners to prevent duplicates
+    socket.off('c4-player-assigned');
+    socket.off('c4-start');
+    socket.off('c4-update-board');
+    socket.off('c4-reset');
+    socket.off('c4-error');
+    socket.off('c4-player-left');
+
+    socket.on('c4-player-assigned', (color) => {
+        c4MyPlayer = color;
+        c4OnlineStatus.innerText = `Joined Room! You are ${color}. Waiting for opponent...`;
+        c4OnlineStatus.style.color = '#fbbf24';
+    });
+
+    socket.on('c4-start', ({ turn }) => {
+        c4OnlineStatus.innerText = "Game Starting!";
+        c4P1Name = "Player Red";
+        c4P2Name = "Player Yellow";
+        startConnect4Game(true); // Skip setup, go to game
+        updateC4Status(); // Show turn
+    });
+
+    socket.on('c4-update-board', ({ row, col, player, turn }) => {
+        // Apply move from server
+        c4Board[row][col] = player === 'Red' ? 1 : 2;
+
+        // Animate
+        animateDrop(row, col, player === 'Red' ? 1 : 2);
+
+        // Check Win/Draw locally
+        if (checkC4Win(row, col)) {
+            c4GameActive = false;
+            endC4Game(false);
+        } else if (checkC4Draw()) {
+            c4GameActive = false;
+            endC4Game(true);
+        } else {
+            c4CurrentPlayer = turn === 'Red' ? 1 : 2;
+            updateC4Status();
+        }
+    });
+
+    socket.on('c4-reset', () => {
+        resetConnect4Board();
+    });
+
+    socket.on('c4-error', (msg) => {
+        alert(msg);
+        c4OnlineStatus.innerText = msg;
+        c4OnlineStatus.style.color = '#ef4444';
+    });
+
+    socket.on('c4-player-left', () => {
+        alert("Opponent left the game.");
+        showC4Setup();
+    });
+}
+
+function joinC4Room(roomId) {
+    if (!socket) initC4Socket();
+    c4RoomId = roomId;
+    socket.emit('join-c4', roomId);
+    c4OnlineStatus.innerText = "Connecting to room...";
+}
+
+
+function startConnect4Game(skip = false) {
+    if (!c4IsOnline) {
+        // Local Setup
+        if (!skip) {
+            const p1Input = document.getElementById('c4P1Input');
+            const p2Input = document.getElementById('c4P2Input');
+            if (p1Input) c4P1Name = p1Input.value.trim() || "Red";
+            if (p2Input) c4P2Name = p2Input.value.trim() || "Yellow";
+        } else {
+            c4P1Name = "Red";
+            c4P2Name = "Yellow";
+        }
     }
 
     if (c4SetupScreen) {
         c4SetupScreen.classList.add('hidden');
-        c4SetupScreen.style.display = 'none'; // Force hide
+        c4SetupScreen.style.display = 'none';
     }
 
     if (c4GameContainer) {
         c4GameContainer.classList.remove('hidden');
-        c4GameContainer.style.display = 'block'; // Force show (or flex if needed, but block is fine for container)
+        c4GameContainer.style.display = 'block';
     }
 
     resetConnect4Board();
@@ -62,12 +193,24 @@ function startConnect4Game(skip = false) {
 
 function resetConnect4Board() {
     c4Board = Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(0));
-    c4CurrentPlayer = 1;
+    c4CurrentPlayer = 1; // Red starts
     c4GameActive = true;
     c4WinningMessageElement.classList.remove('show');
     renderC4BoardInitial();
     updateC4Status();
+
+    // If online and I clicked reset, emit it
+    // Wait, this function is called by socket.on('c4-reset') too.
+    // We need to differentiate user action vs server event?
+    // Actually, usually reset button calls a handler.
 }
+
+// Add Reset Button Handler
+const c4ResetBtn = document.getElementById('c4ResetBtn'); // Need to add this ID to HTML if not there
+// Wait, index.html doesn't have a specific reset button for C4 inside the game container?
+// It has "New Game" in winning message.
+// Let's check index.html... It has a generic "Reset Board" button in Tic Tac Toe, but C4?
+// I need to check if C4 has a reset button in HTML.
 
 function renderC4BoardInitial() {
     c4BoardElement.innerHTML = '';
@@ -86,21 +229,28 @@ function renderC4BoardInitial() {
 function handleC4Click(col) {
     if (!c4GameActive) return;
 
+    // Online Check
+    if (c4IsOnline) {
+        // Check turn
+        const myTurn = (c4MyPlayer === 'Red' && c4CurrentPlayer === 1) ||
+            (c4MyPlayer === 'Yellow' && c4CurrentPlayer === 2);
+
+        if (!myTurn) return;
+
+        // Emit move
+        socket.emit('make-move-c4', {
+            roomId: c4RoomId,
+            col: col,
+            player: c4MyPlayer
+        });
+        return; // Wait for server update
+    }
+
+    // Local Logic
     for (let r = C4_ROWS - 1; r >= 0; r--) {
         if (c4Board[r][col] === 0) {
             c4Board[r][col] = c4CurrentPlayer;
-
-            // Animate Drop
-            const cell = c4BoardElement.querySelector(`.c4-cell[data-row="${r}"][data-col="${col}"]`);
-            const piece = document.createElement('div');
-            piece.classList.add('c4-piece');
-            if (c4CurrentPlayer === 1) piece.classList.add(PLAYER_1_CLASS);
-            else piece.classList.add(PLAYER_2_CLASS);
-
-            // Set drop distance for animation
-            piece.style.setProperty('--fall-distance', `-${(r + 1) * 60}px`);
-
-            cell.appendChild(piece);
+            animateDrop(r, col, c4CurrentPlayer);
 
             if (checkC4Win(r, col)) {
                 c4GameActive = false;
@@ -115,6 +265,19 @@ function handleC4Click(col) {
             return;
         }
     }
+}
+
+function animateDrop(r, col, player) {
+    const cell = c4BoardElement.querySelector(`.c4-cell[data-row="${r}"][data-col="${col}"]`);
+    if (!cell) return;
+
+    const piece = document.createElement('div');
+    piece.classList.add('c4-piece');
+    if (player === 1) piece.classList.add(PLAYER_1_CLASS);
+    else piece.classList.add(PLAYER_2_CLASS);
+
+    piece.style.setProperty('--fall-distance', `-${(r + 1) * 60}px`);
+    cell.appendChild(piece);
 }
 
 function updateC4Status() {
@@ -135,15 +298,13 @@ function endC4Game(draw) {
 
 function checkC4Win(row, col) {
     const player = c4Board[row][col];
-
-    // Horizontal
     let count = 0;
+    // Horizontal
     for (let c = 0; c < C4_COLS; c++) {
         if (c4Board[row][c] === player) count++;
         else count = 0;
         if (count >= 4) return true;
     }
-
     // Vertical
     count = 0;
     for (let r = 0; r < C4_ROWS; r++) {
@@ -151,21 +312,16 @@ function checkC4Win(row, col) {
         else count = 0;
         if (count >= 4) return true;
     }
-
     // Diagonal /
     if (checkDirection(row, col, 1, 1)) return true;
-
     // Diagonal \
     if (checkDirection(row, col, 1, -1)) return true;
-
     return false;
 }
 
 function checkDirection(row, col, rowDir, colDir) {
     const player = c4Board[row][col];
     let count = 1;
-
-    // Check one way
     let r = row + rowDir;
     let c = col + colDir;
     while (r >= 0 && r < C4_ROWS && c >= 0 && c < C4_COLS && c4Board[r][c] === player) {
@@ -173,8 +329,6 @@ function checkDirection(row, col, rowDir, colDir) {
         r += rowDir;
         c += colDir;
     }
-
-    // Check other way
     r = row - rowDir;
     c = col - colDir;
     while (r >= 0 && r < C4_ROWS && c >= 0 && c < C4_COLS && c4Board[r][c] === player) {
@@ -182,12 +336,23 @@ function checkDirection(row, col, rowDir, colDir) {
         r -= rowDir;
         c -= colDir;
     }
-
     return count >= 4;
 }
 
 function checkC4Draw() {
     return c4Board.every(row => row.every(cell => cell !== 0));
+}
+
+// Restart Handler (for button in Winning Message)
+const c4RestartBtn = document.getElementById('c4RestartBtn'); // Need to ensure this ID exists
+if (c4RestartBtn) {
+    c4RestartBtn.addEventListener('click', () => {
+        if (c4IsOnline && socket) {
+            socket.emit('reset-c4', c4RoomId);
+        } else {
+            resetConnect4Board();
+        }
+    });
 }
 
 // Expose to global

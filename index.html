@@ -297,16 +297,38 @@
         <div class="setup-screen" id="c4SetupScreen">
             <div class="setup-content">
                 <h1>Connect Four</h1>
-                <div class="input-group">
-                    <label for="c4Player1Name">Player 1 (Red) Name</label>
-                    <input type="text" id="c4Player1Name" placeholder="Enter Name">
+
+                <!-- Mode Selection -->
+                <div class="mode-selection">
+                    <button id="c4ModeLocalBtn" class="mode-btn active">Local Play</button>
+                    <button id="c4ModeOnlineBtn" class="mode-btn">Play Online</button>
                 </div>
-                <div class="input-group">
-                    <label for="c4Player2Name">Player 2 (Yellow) Name</label>
-                    <input type="text" id="c4Player2Name" placeholder="Enter Name">
+
+                <!-- Local Setup -->
+                <div id="c4LocalSetup">
+                    <div class="input-group">
+                        <label>Player 1 (Red)</label>
+                        <input type="text" id="c4P1Input" placeholder="Enter Name" value="Red">
+                    </div>
+                    <div class="input-group">
+                        <label>Player 2 (Yellow)</label>
+                        <input type="text" id="c4P2Input" placeholder="Enter Name" value="Yellow">
+                    </div>
+                    <button id="c4StartGameBtn" class="btn-start">Start Game</button>
                 </div>
-                <button class="btn-start" onclick="startConnect4Game()">Start Game</button>
-                <button class="btn-skip" onclick="startConnect4Game(true)">Skip</button>
+
+                <!-- Online Setup -->
+                <div id="c4OnlineSetup" class="hidden">
+                    <div class="input-group">
+                        <label for="c4RoomIdInput">Room ID</label>
+                        <input type="text" id="c4RoomIdInput" placeholder="e.g. ROOM1">
+                    </div>
+                    <div class="online-controls">
+                        <button id="c4CreateRoomBtn" class="btn-secondary">Create Room</button>
+                        <button id="c4JoinRoomBtn" class="btn-start">Join Room</button>
+                    </div>
+                    <p id="c4OnlineStatus" class="status-text"></p>
+                </div>
             </div>
         </div>
 
