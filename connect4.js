@@ -9,6 +9,7 @@ let c4GameActive = false;
 let c4P1Name = "Red";
 let c4P2Name = "Yellow";
 let c4IsOnline = false;
+let c4VsComputer = false;
 let c4MyPlayer = null; // 'Red' or 'Yellow'
 let c4RoomId = null;
 
@@ -50,25 +51,41 @@ function showC4Setup() {
 }
 
 // Mode Switching
-if (c4ModeLocalBtn && c4ModeOnlineBtn) {
+const c4ModeComputerBtn = document.getElementById('c4ModeComputerBtn');
+
+if (c4ModeLocalBtn && c4ModeOnlineBtn && c4ModeComputerBtn) {
     c4ModeLocalBtn.addEventListener('click', () => setC4Mode('local'));
     c4ModeOnlineBtn.addEventListener('click', () => setC4Mode('online'));
+    c4ModeComputerBtn.addEventListener('click', () => setC4Mode('computer'));
 }
 
 function setC4Mode(mode) {
+    // Reset
+    c4ModeLocalBtn.classList.remove('active');
+    c4ModeOnlineBtn.classList.remove('active');
+    c4ModeComputerBtn.classList.remove('active');
+    c4LocalSetup.classList.add('hidden');
+    c4OnlineSetup.classList.add('hidden');
+
     if (mode === 'local') {
         c4IsOnline = false;
+        c4VsComputer = false;
         c4ModeLocalBtn.classList.add('active');
-        c4ModeOnlineBtn.classList.remove('active');
         c4LocalSetup.classList.remove('hidden');
-        c4OnlineSetup.classList.add('hidden');
-    } else {
+    } else if (mode === 'online') {
         c4IsOnline = true;
-        c4ModeLocalBtn.classList.remove('active');
+        c4VsComputer = false;
         c4ModeOnlineBtn.classList.add('active');
-        c4LocalSetup.classList.add('hidden');
         c4OnlineSetup.classList.remove('hidden');
         initC4Socket();
+    } else if (mode === 'computer') {
+        c4IsOnline = false;
+        c4VsComputer = true;
+        c4ModeComputerBtn.classList.add('active');
+        c4LocalSetup.classList.remove('hidden');
+        // Pre-fill Player 2 name
+        const p2Input = document.getElementById('c4Player2Name');
+        if (p2Input) p2Input.value = "Computer";
     }
 }
 
@@ -261,6 +278,11 @@ function handleC4Click(col) {
             } else {
                 c4CurrentPlayer = c4CurrentPlayer === 1 ? 2 : 1;
                 updateC4Status();
+
+                // Computer Turn
+                if (c4VsComputer && c4CurrentPlayer === 2) {
+                    setTimeout(makeC4ComputerMove, 600);
+                }
             }
             return;
         }
@@ -338,7 +360,24 @@ function checkDirection(row, col, rowDir, colDir) {
     }
     return count >= 4;
 }
+// AI Logic
+function makeC4ComputerMove() {
+    if (!c4GameActive) return;
 
+    // Simple AI: Pick random valid column
+    // TODO: Implement Minimax for smarter AI
+    const validCols = [];
+    for (let c = 0; c < C4_COLS; c++) {
+        if (c4Board[0][c] === 0) {
+            validCols.push(c);
+        }
+    }
+
+    if (validCols.length > 0) {
+        const randomCol = validCols[Math.floor(Math.random() * validCols.length)];
+        handleC4Click(randomCol);
+    }
+}
 function checkC4Draw() {
     return c4Board.every(row => row.every(cell => cell !== 0));
 }

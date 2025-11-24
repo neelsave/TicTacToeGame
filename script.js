@@ -270,6 +270,7 @@ window.addEventListener('load', () => {
 
 // --- Online Variables ---
 let isOnline = false;
+let vsComputer = false;
 let socket;
 let currentRoomId = null;
 let myPlayer = null; // 'X' or 'O'
@@ -278,6 +279,7 @@ let onlineTurn = 'X'; // Server source of truth
 // --- Mode Selection ---
 const modeLocalBtn = document.getElementById('modeLocalBtn');
 const modeOnlineBtn = document.getElementById('modeOnlineBtn');
+const modeComputerBtn = document.getElementById('modeComputerBtn');
 const localSetup = document.getElementById('localSetup');
 const onlineSetup = document.getElementById('onlineSetup');
 const roomIdInput = document.getElementById('roomIdInput');
@@ -285,25 +287,39 @@ const createRoomBtn = document.getElementById('createRoomBtn');
 const joinRoomBtn = document.getElementById('joinRoomBtn');
 const onlineStatus = document.getElementById('onlineStatus');
 
-if (modeLocalBtn && modeOnlineBtn) {
+if (modeLocalBtn && modeOnlineBtn && modeComputerBtn) {
     modeLocalBtn.addEventListener('click', () => setMode('local'));
     modeOnlineBtn.addEventListener('click', () => setMode('online'));
+    modeComputerBtn.addEventListener('click', () => setMode('computer'));
 }
 
 function setMode(mode) {
+    // Reset all
+    modeLocalBtn.classList.remove('active');
+    modeOnlineBtn.classList.remove('active');
+    modeComputerBtn.classList.remove('active');
+    localSetup.classList.add('hidden');
+    onlineSetup.classList.add('hidden');
+
     if (mode === 'local') {
         isOnline = false;
+        vsComputer = false;
         modeLocalBtn.classList.add('active');
-        modeOnlineBtn.classList.remove('active');
         localSetup.classList.remove('hidden');
-        onlineSetup.classList.add('hidden');
-    } else {
+    } else if (mode === 'online') {
         isOnline = true;
-        modeLocalBtn.classList.remove('active');
+        vsComputer = false;
         modeOnlineBtn.classList.add('active');
-        localSetup.classList.add('hidden');
         onlineSetup.classList.remove('hidden');
         initSocket();
+    } else if (mode === 'computer') {
+        isOnline = false;
+        vsComputer = true;
+        modeComputerBtn.classList.add('active');
+        localSetup.classList.remove('hidden'); // Use local setup for names
+        // Pre-fill Player O name
+        const p2Input = document.getElementById('playerOName');
+        if (p2Input) p2Input.value = "Computer";
     }
 }
 
@@ -475,6 +491,11 @@ function handleClick(e) {
         swapTurns();
         setBoardHoverClass();
         updateStatusDisplay();
+
+        // Computer Turn
+        if (vsComputer && circleTurn) {
+            setTimeout(makeComputerMove, 500); // Small delay for realism
+        }
     }
 }
 
@@ -844,6 +865,90 @@ function showExpenseDashboard() {
     expenseHistory.classList.add('hidden');
     navDashboard.classList.add('active');
     navHistory.classList.remove('active');
+}
+// --- Tic Tac Toe AI (Minimax) ---
+function makeComputerMove() {
+    const boardState = getBoardState();
+    const bestMove = minimax(boardState, 'O').index;
+
+    if (bestMove !== undefined) {
+        const tile = tileElements[bestMove];
+        // Simulate click
+        placeMark(tile, O_CLASS);
+        if (checkWin(O_CLASS)) {
+            endGame(false);
+        } else if (isDraw()) {
+            endGame(true);
+        } else {
+            swapTurns();
+            setBoardHoverClass();
+            updateStatusDisplay();
+        }
+    }
+}
+
+function getBoardState() {
+    return [...tileElements].map(tile => {
+        if (tile.classList.contains(X_CLASS)) return 'X';
+        if (tile.classList.contains(O_CLASS)) return 'O';
+        return null;
+    });
+}
+
+function minimax(newBoard, player) {
+    const availSpots = newBoard.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+
+    if (checkWinState(newBoard, 'X')) return { score: -10 };
+    if (checkWinState(newBoard, 'O')) return { score: 10 };
+    if (availSpots.length === 0) return { score: 0 };
+
+    const moves = [];
+
+    for (let i = 0; i < availSpots.length; i++) {
+        const move = {};
+        move.index = availSpots[i];
+        newBoard[availSpots[i]] = player;
+
+        if (player === 'O') {
+            const result = minimax(newBoard, 'X');
+            move.score = result.score;
+        } else {
+            const result = minimax(newBoard, 'O');
+            move.score = result.score;
+        }
+
+        newBoard[availSpots[i]] = null;
+        moves.push(move);
+    }
+
+    let bestMove;
+    if (player === 'O') {
+        let bestScore = -10000;
+        for (let i = 0; i < moves.length; i++) {
+            if (moves[i].score > bestScore) {
+                bestScore = moves[i].score;
+                bestMove = i;
+            }
+        }
+    } else {
+        let bestScore = 10000;
+        for (let i = 0; i < moves.length; i++) {
+            if (moves[i].score < bestScore) {
+                bestScore = moves[i].score;
+                bestMove = i;
+            }
+        }
+    }
+
+    return moves[bestMove];
+}
+
+function checkWinState(board, player) {
+    return WINNING_COMBINATIONS.some(combination => {
+        return combination.every(index => {
+            return board[index] === player;
+        });
+    });
 }
 
 function showExpenseHistory() {
