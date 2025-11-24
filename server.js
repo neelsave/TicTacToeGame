@@ -14,6 +14,7 @@ app.use(express.static(__dirname));
 
 // Socket.io connection handling
 const rooms = {};
+const c4Rooms = {};
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
@@ -121,7 +122,8 @@ io.on('connection', (socket) => {
 
 
     // --- Connect Four Events ---
-    const c4Rooms = {};
+    // c4Rooms is now global
+
 
     socket.on('join-c4', (roomId) => {
         let room = c4Rooms[roomId];
