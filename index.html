@@ -916,6 +916,17 @@
     </div>
 
 
+    <!-- Player List Modal -->
+    <div id="playerListModal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <span class="close-modal" onclick="togglePlayerList()">&times;</span>
+            <h2>Online Players</h2>
+            <ul id="playerList" class="player-list">
+                <!-- Players injected here -->
+            </ul>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
     <script src="connect4.js"></script>

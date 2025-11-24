@@ -15,12 +15,26 @@ app.use(express.static(__dirname));
 // Socket.io connection handling
 const rooms = {};
 const c4Rooms = {};
-let connectedPlayers = 0;
+// connectedUsers: { socketId: { id: socketId, name: 'Guest' } }
+const connectedUsers = {};
 
 io.on('connection', (socket) => {
-    connectedPlayers++;
-    io.emit('update-player-count', connectedPlayers);
-    console.log(`User connected: ${socket.id}. Total: ${connectedPlayers}`);
+    // Default user entry
+    connectedUsers[socket.id] = { id: socket.id, name: 'Guest' };
+
+    // Broadcast updated list and count
+    io.emit('update-player-list', Object.values(connectedUsers));
+    io.emit('update-player-count', Object.keys(connectedUsers).length);
+
+    console.log(`User connected: ${socket.id}. Total: ${Object.keys(connectedUsers).length}`);
+
+    // --- User Registration ---
+    socket.on('register-user', (username) => {
+        if (connectedUsers[socket.id]) {
+            connectedUsers[socket.id].name = username;
+            io.emit('update-player-list', Object.values(connectedUsers));
+        }
+    });
 
     // --- Chat Events ---
     socket.on('chat-message', (msg) => {
@@ -208,9 +222,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        connectedPlayers--;
-        io.emit('update-player-count', connectedPlayers);
-        console.log(`User disconnected: ${socket.id}. Total: ${connectedPlayers}`);
+        delete connectedUsers[socket.id];
+        io.emit('update-player-list', Object.values(connectedUsers));
+        io.emit('update-player-count', Object.keys(connectedUsers).length);
+
+        console.log(`User disconnected: ${socket.id}. Total: ${Object.keys(connectedUsers).length}`);
         // Handle cleanup for Tic Tac Toe
         for (const roomId in rooms) {
             const room = rooms[roomId];

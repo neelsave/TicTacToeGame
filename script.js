@@ -124,6 +124,9 @@ function initGlobalPresence() {
             console.log("Global socket connected");
             const el = document.getElementById('onlineCountDisplay');
             if (el) el.innerText = "Online: Connected";
+
+            // Register user with server
+            socket.emit('register-user', globalUsername);
         });
 
         socket.on('connect_error', (err) => {
@@ -135,7 +138,16 @@ function initGlobalPresence() {
         socket.on('update-player-count', (count) => {
             console.log("Player count received:", count);
             const el = document.getElementById('onlineCountDisplay');
-            if (el) el.innerText = `Online: ${count}`;
+            if (el) {
+                el.innerText = `Online: ${count}`;
+                el.style.cursor = 'pointer';
+                el.onclick = togglePlayerList; // Make clickable
+            }
+        });
+
+        socket.on('update-player-list', (users) => {
+            console.log("Player list received:", users);
+            renderPlayerList(users);
         });
     }
 
@@ -173,6 +185,11 @@ function handleCredentialResponse(response) {
     // Update UI
     updateGlobalStatusUI();
 
+    // Update server
+    if (socket && socket.connected) {
+        socket.emit('register-user', globalUsername);
+    }
+
     // Hide Google Button, Show Name
     document.getElementById('googleBtnContainer').style.display = 'none';
     document.getElementById('globalUsernameDisplay').classList.remove('hidden');
@@ -201,6 +218,11 @@ function changeGlobalName() {
         localStorage.setItem(globalUsernameKey, globalUsername);
         updateGlobalStatusUI();
 
+        // Update server
+        if (socket && socket.connected) {
+            socket.emit('register-user', globalUsername);
+        }
+
         // Also update chat name if it exists
         if (typeof chatUsername !== 'undefined') {
             chatUsername = globalUsername;
@@ -209,6 +231,36 @@ function changeGlobalName() {
         }
     }
 }
+
+function renderPlayerList(users) {
+    const list = document.getElementById('playerList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    users.forEach(user => {
+        const li = document.createElement('li');
+        const avatar = document.createElement('div');
+        avatar.className = 'player-avatar';
+        avatar.innerText = user.name.charAt(0).toUpperCase();
+
+        const nameSpan = document.createElement('span');
+        nameSpan.innerText = user.name + (user.name === globalUsername ? ' (You)' : '');
+
+        li.appendChild(avatar);
+        li.appendChild(nameSpan);
+        list.appendChild(li);
+    });
+}
+
+function togglePlayerList() {
+    const modal = document.getElementById('playerListModal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+    }
+}
+
+// Expose to window
+window.togglePlayerList = togglePlayerList;
 
 // Call safely when loaded
 window.addEventListener('load', () => {
