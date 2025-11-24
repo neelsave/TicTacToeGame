@@ -20,7 +20,7 @@ function initChat() {
             // PRODUCTION: Replace this URL with your Render/Glitch server URL
             // DEVELOPMENT: Keep it empty to use localhost or auto-discovery
             // Example: const SERVER_URL = 'https://my-game-app.onrender.com';
-            const SERVER_URL = '';
+            const SERVER_URL = 'https://tictactoegame-zyid.onrender.com';
 
             socket = io(SERVER_URL);
 
