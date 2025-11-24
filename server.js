@@ -44,9 +44,14 @@ io.on('connection', (socket) => {
 
     // Join Room
     socket.on('join-room', (roomId) => {
+        console.log(`Socket ${socket.id} trying to join room ${roomId}`);
         const room = rooms[roomId];
         if (!room) {
             socket.emit('room-error', 'Room not found');
+            return;
+        }
+        if (room.players.includes(socket.id)) {
+            socket.emit('room-error', 'You are already in this room');
             return;
         }
         if (room.players.length >= 2) {
@@ -56,14 +61,19 @@ io.on('connection', (socket) => {
 
         room.players.push(socket.id);
         socket.join(roomId);
+        console.log(`Socket ${socket.id} joined room ${roomId}. Players: ${room.players.length}`);
+
         socket.emit('room-joined', roomId);
         socket.emit('player-assigned', 'O'); // Joiner is O
 
         // Notify both that game can start
-        io.to(roomId).emit('game-start', {
-            turn: room.turn,
-            scores: room.scores
-        });
+        if (room.players.length === 2) {
+            console.log(`Room ${roomId} is full. Starting game.`);
+            io.to(roomId).emit('game-start', {
+                turn: room.turn,
+                scores: room.scores
+            });
+        }
     });
 
     // Make Move

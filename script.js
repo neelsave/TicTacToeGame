@@ -169,15 +169,30 @@ function initSocket() {
         });
 
         socket.on('game-start', ({ turn }) => {
-            setupScreen.classList.add('hidden');
-            gameContainer.classList.remove('hidden');
-            onlineTurn = turn;
-            playerXName = 'Player X'; // Generic for online
-            playerOName = 'Player O';
-            scoreNameX.innerText = playerXName;
-            scoreNameO.innerText = playerOName;
-            startGame(); // Reuse existing start, but we will override click handler
-            updateStatusDisplay();
+            console.log("Game Start Event Received!");
+            onlineStatus.innerText = "Game Starting...";
+
+            try {
+                if (!setupScreen || !gameContainer) {
+                    throw new Error("UI elements not found");
+                }
+
+                setupScreen.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+
+                onlineTurn = turn;
+                playerXName = 'Player X'; // Generic for online
+                playerOName = 'Player O';
+                scoreNameX.innerText = playerXName;
+                scoreNameO.innerText = playerOName;
+
+                startGame();
+                updateStatusDisplay();
+            } catch (e) {
+                console.error("Game Start Error:", e);
+                onlineStatus.innerText = "Error starting game: " + e.message;
+                onlineStatus.style.color = '#ef4444';
+            }
         });
 
         socket.on('update-board', ({ board, turn }) => {
