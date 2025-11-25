@@ -331,4 +331,3 @@ function renderMemoryRoomList(rooms) {
 
 window.initMemory = initMemory;
 window.resetMemoryGame = resetMemoryGame;
-```
