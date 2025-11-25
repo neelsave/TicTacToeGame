@@ -138,6 +138,7 @@ function initC4Socket() {
         c4OnlineStatus.innerText = "Game Starting!";
         c4P1Name = "Player Red";
         c4P2Name = "Player Yellow";
+        c4WinningMessageElement.classList.remove('show'); // Hide modal if open
         startConnect4Game(true); // Skip setup, go to game
         updateC4Status(); // Show turn
     });
@@ -163,6 +164,7 @@ function initC4Socket() {
     });
 
     socket.on('c4-reset', () => {
+        c4WinningMessageElement.classList.remove('show');
         resetConnect4Board();
     });
 
