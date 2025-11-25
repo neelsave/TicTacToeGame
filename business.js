@@ -358,31 +358,25 @@ function handlePropertyLand(player, cell, playerIdx) {
     if (!prop) {
         // Unowned - Buy?
         if (player.money >= cell.price) {
-            // Simple confirm for now, can be upgraded to modal
-            if (confirm(`Buy ${cell.name} for ₹${cell.price}?`)) {
-                player.money -= cell.price;
-                businessProperties[cell.id] = { owner: playerIdx };
-                player.properties.push(cell.id);
-                alert(`Bought ${cell.name}!`);
-            }
+            // Show Modal
+            showBuyModal(cell, player, playerIdx);
         } else {
             // Not enough money
         }
-        nextTurn();
+        // Note: nextTurn() is called after modal choice or if not enough money
+        if (player.money < cell.price) nextTurn();
     } else {
         // Owned
         if (prop.owner !== playerIdx) {
             // Pay Rent
             const owner = businessPlayers[prop.owner];
             let rent = cell.rent || 0;
-            // Logic for Railroad/Utility rent calculation could go here
 
             if (player.money >= rent) {
                 player.money -= rent;
                 owner.money += rent;
                 alert(`Paid Rent ₹${rent} to P${prop.owner + 1}`);
             } else {
-                // Bankrupt logic (simplified: take all money)
                 owner.money += player.money;
                 player.money = 0;
                 alert(`Paid Rent ₹${player.money} (Bankrupt!)`);
@@ -390,6 +384,63 @@ function handlePropertyLand(player, cell, playerIdx) {
         }
         nextTurn();
     }
+}
+
+function showBuyModal(cell, player, playerIdx) {
+    const modal = document.getElementById('businessBuyModal');
+    const title = document.getElementById('buyModalTitle');
+    const text = document.getElementById('buyModalText');
+    const yesBtn = document.getElementById('buyModalYesBtn');
+    const noBtn = document.getElementById('buyModalNoBtn');
+
+    if (!modal) {
+        // Fallback if modal missing
+        if (confirm(`Buy ${cell.name} for ₹${cell.price}?`)) {
+            buyProperty(cell, player, playerIdx);
+        }
+        nextTurn();
+        return;
+    }
+
+    title.innerText = `Buy ${cell.name}?`;
+    text.innerText = `Price: ₹${cell.price} | Your Money: ₹${player.money}`;
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+
+    // One-time listeners (cleared by cloning or simple replacement)
+    const newYes = yesBtn.cloneNode(true);
+    const newNo = noBtn.cloneNode(true);
+    yesBtn.parentNode.replaceChild(newYes, yesBtn);
+    noBtn.parentNode.replaceChild(newNo, noBtn);
+
+    newYes.onclick = () => {
+        buyProperty(cell, player, playerIdx);
+        closeBuyModal();
+        nextTurn();
+    };
+
+    newNo.onclick = () => {
+        closeBuyModal();
+        nextTurn();
+    };
+}
+
+function closeBuyModal() {
+    const modal = document.getElementById('businessBuyModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+}
+
+function buyProperty(cell, player, playerIdx) {
+    player.money -= cell.price;
+    businessProperties[cell.id] = { owner: playerIdx };
+    player.properties.push(cell.id);
+    // Alert is okay for confirmation, or just update UI
+    // alert(`Bought ${cell.name}!`); 
+    updateBusinessUI();
 }
 
 function nextTurn() {
