@@ -177,7 +177,7 @@ if (businessJoinBtn) {
     });
 }
 
-let businessIsOnline = false;
+
 
 // ... (existing variables)
 
