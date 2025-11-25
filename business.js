@@ -247,15 +247,53 @@ if (businessDiceBtn) {
 
 function renderBusinessBoard() {
     businessBoardElement.innerHTML = '';
-    // Simple Grid Render (40 cells)
-    // We need a proper layout: Bottom (10), Left (10), Top (10), Right (10)
-    // For simplicity in this version, we might just render a list or a simple flex wrap
-    // But user asked for "Board Game". Let's try a CSS Grid approach in style.css
 
-    BUSINESS_BOARD.forEach(cell => {
+    // Add Center Logo/Area
+    const centerDiv = document.createElement('div');
+    centerDiv.style.gridColumn = "2 / span 9";
+    centerDiv.style.gridRow = "2 / span 9";
+    centerDiv.style.display = "flex";
+    centerDiv.style.flexDirection = "column";
+    centerDiv.style.alignItems = "center";
+    centerDiv.style.justifyContent = "center";
+    centerDiv.innerHTML = "<h1>BUSINESS</h1><p>Indian Edition</p>";
+    businessBoardElement.appendChild(centerDiv);
+
+    BUSINESS_BOARD.forEach((cell, index) => {
         const cellDiv = document.createElement('div');
         cellDiv.className = `business-cell ${cell.type} ${cell.color}`;
         cellDiv.dataset.id = cell.id;
+
+        // Calculate Grid Position (11x11)
+        // 0 (GO): 11, 11 (Bottom Right)
+        // 1-9: Bottom Row (Right to Left) -> Row 11, Col 10 to 2
+        // 10 (Jail): 11, 1 (Bottom Left)
+        // 11-19: Left Col (Bottom to Top) -> Row 10 to 2, Col 1
+        // 20 (Free Parking): 1, 1 (Top Left)
+        // 21-29: Top Row (Left to Right) -> Row 1, Col 2 to 10
+        // 30 (Go To Jail): 1, 11 (Top Right)
+        // 31-39: Right Col (Top to Bottom) -> Row 2 to 10, Col 11
+
+        let row, col;
+
+        if (index === 0) { row = 11; col = 11; }
+        else if (index < 10) { row = 11; col = 11 - index; }
+        else if (index === 10) { row = 11; col = 1; }
+        else if (index < 20) { row = 11 - (index - 10); col = 1; }
+        else if (index === 20) { row = 1; col = 1; }
+        else if (index < 30) { row = 1; col = 1 + (index - 20); }
+        else if (index === 30) { row = 1; col = 11; }
+        else { row = 1 + (index - 30); col = 11; }
+
+        cellDiv.style.gridRow = row;
+        cellDiv.style.gridColumn = col;
+
+        // Inner Content
+        if (cell.type === 'property') {
+            const colorBar = document.createElement('div');
+            colorBar.className = 'cell-color-bar';
+            cellDiv.appendChild(colorBar);
+        }
 
         const name = document.createElement('div');
         name.className = 'cell-name';
@@ -269,7 +307,6 @@ function renderBusinessBoard() {
             cellDiv.appendChild(price);
         }
 
-        // Placeholder for players
         const playersContainer = document.createElement('div');
         playersContainer.className = 'cell-players';
         playersContainer.id = `cell-players-${cell.id}`;
