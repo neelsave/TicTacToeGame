@@ -9,25 +9,6 @@ let memoryLockBoard = false;
 let memoryIsOnline = false;
 let memoryMyPlayer = 1; // 1 or 2
 let memoryRoomId = null;
-
-const memoryBoardElement = document.getElementById('memoryBoard');
-const memoryStatusDisplay = document.getElementById('memoryStatusDisplay');
-const memoryScore1 = document.getElementById('memoryScore1');
-const memoryScore2 = document.getElementById('memoryScore2');
-
-// UI Elements
-const memorySetupScreen = document.getElementById('memorySetupScreen');
-const memoryGameContainer = document.getElementById('memoryGameContainer');
-const memoryModeLocalBtn = document.getElementById('memoryModeLocalBtn');
-const memoryModeOnlineBtn = document.getElementById('memoryModeOnlineBtn');
-const memoryLocalSetup = document.getElementById('memoryLocalSetup');
-const memoryOnlineSetup = document.getElementById('memoryOnlineSetup');
-const memoryRoomInput = document.getElementById('memoryRoomInput');
-const memoryCreateBtn = document.getElementById('memoryCreateBtn');
-const memoryJoinBtn = document.getElementById('memoryJoinBtn');
-const memoryOnlineStatus = document.getElementById('memoryOnlineStatus');
-const memoryStartLocalBtn = document.getElementById('memoryStartLocalBtn');
-
 let memoryListenersAttached = false;
 
 function initMemory() {
@@ -36,22 +17,70 @@ function initMemory() {
     setMemoryMode('local');
 }
 
+function showMemorySetup() {
+    const memorySetupScreen = document.getElementById('memorySetupScreen');
+    const memoryGameContainer = document.getElementById('memoryGameContainer');
+    if (memorySetupScreen) memorySetupScreen.classList.remove('hidden');
+    if (memoryGameContainer) memoryGameContainer.classList.add('hidden');
+}
+
+function setMemoryMode(mode) {
+    const memoryModeLocalBtn = document.getElementById('memoryModeLocalBtn');
+    const memoryModeOnlineBtn = document.getElementById('memoryModeOnlineBtn');
+    const memoryLocalSetup = document.getElementById('memoryLocalSetup');
+    const memoryOnlineSetup = document.getElementById('memoryOnlineSetup');
+
+    if (!memoryModeLocalBtn || !memoryModeOnlineBtn) return;
+
+    memoryModeLocalBtn.classList.remove('active');
+    memoryModeOnlineBtn.classList.remove('active');
+    memoryLocalSetup.classList.add('hidden');
+    memoryOnlineSetup.classList.add('hidden');
+
+    if (mode === 'local') {
+        memoryIsOnline = false;
+        memoryModeLocalBtn.classList.add('active');
+        memoryLocalSetup.classList.remove('hidden');
+    } else {
+        memoryIsOnline = true;
+        memoryModeOnlineBtn.classList.add('active');
+        memoryOnlineSetup.classList.remove('hidden');
+        initMemorySocket();
+    }
+}
+
 function attachMemoryListeners() {
     if (memoryListenersAttached) return;
 
     const localBtn = document.getElementById('memoryModeLocalBtn');
     const onlineBtn = document.getElementById('memoryModeOnlineBtn');
     const startLocalBtn = document.getElementById('memoryStartLocalBtn');
+    const createBtn = document.getElementById('memoryCreateBtn');
+    const joinBtn = document.getElementById('memoryJoinBtn');
 
-    if (localBtn && onlineBtn && startLocalBtn) {
-        localBtn.addEventListener('click', () => setMemoryMode('local'));
-        onlineBtn.addEventListener('click', () => setMemoryMode('online'));
-        startLocalBtn.addEventListener('click', startLocalMemoryGame);
-        memoryListenersAttached = true;
-        console.log("Memory Match listeners attached");
-    } else {
-        console.error("Memory Match buttons not found");
+    if (localBtn) localBtn.addEventListener('click', () => setMemoryMode('local'));
+    if (onlineBtn) onlineBtn.addEventListener('click', () => setMemoryMode('online'));
+    if (startLocalBtn) startLocalBtn.addEventListener('click', startLocalMemoryGame);
+
+    if (createBtn) {
+        createBtn.addEventListener('click', () => {
+            const memoryRoomInput = document.getElementById('memoryRoomInput');
+            const roomId = memoryRoomInput.value.trim() || 'MEM-' + Math.floor(Math.random() * 1000);
+            socket.emit('create-memory-room', roomId);
+        });
     }
+
+    if (joinBtn) {
+        joinBtn.addEventListener('click', () => {
+            const memoryRoomInput = document.getElementById('memoryRoomInput');
+            const roomId = memoryRoomInput.value.trim();
+            if (roomId) socket.emit('join-memory-room', roomId);
+            else alert("Enter Room ID");
+        });
+    }
+
+    memoryListenersAttached = true;
+    console.log("Memory Match listeners attached");
 }
 
 function startLocalMemoryGame() {
@@ -79,11 +108,16 @@ function startGameLogic(gridData = null) {
     updateMemoryStatus();
     renderMemoryBoard();
 
-    memorySetupScreen.classList.add('hidden');
-    memoryGameContainer.classList.remove('hidden');
+    const memorySetupScreen = document.getElementById('memorySetupScreen');
+    const memoryGameContainer = document.getElementById('memoryGameContainer');
+    if (memorySetupScreen) memorySetupScreen.classList.add('hidden');
+    if (memoryGameContainer) memoryGameContainer.classList.remove('hidden');
 }
 
 function renderMemoryBoard() {
+    const memoryBoardElement = document.getElementById('memoryBoard');
+    if (!memoryBoardElement) return;
+
     memoryBoardElement.innerHTML = '';
     memoryGrid.forEach((icon, index) => {
         const card = document.createElement('div');
@@ -113,6 +147,7 @@ function handleCardClick(index, icon) {
         if (memoryCurrentPlayer !== memoryMyPlayer) return;
     }
 
+    const memoryBoardElement = document.getElementById('memoryBoard');
     const card = memoryBoardElement.children[index];
     if (card.classList.contains('flipped')) return;
 
@@ -125,6 +160,7 @@ function handleCardClick(index, icon) {
 }
 
 function performFlip(index, icon) {
+    const memoryBoardElement = document.getElementById('memoryBoard');
     const card = memoryBoardElement.children[index];
     card.classList.add('flipped');
     memoryFlippedCards.push({ index, icon, card });
@@ -151,8 +187,9 @@ function disableCards() {
     memoryMatchedPairs++;
     if (memoryMatchedPairs === MEMORY_CARDS.length) {
         setTimeout(() => {
+            const memoryStatusDisplay = document.getElementById('memoryStatusDisplay');
             let winner = memoryPlayer1Score > memoryPlayer2Score ? 'Player 1' : (memoryPlayer2Score > memoryPlayer1Score ? 'Player 2' : 'Draw');
-            memoryStatusDisplay.innerText = `Game Over! ${winner === 'Draw' ? 'It\'s a Draw!' : winner + ' Wins!'}`;
+            if (memoryStatusDisplay) memoryStatusDisplay.innerText = `Game Over! ${winner === 'Draw' ? 'It\'s a Draw!' : winner + ' Wins!'}`;
         }, 500);
     }
 }
@@ -160,6 +197,7 @@ function disableCards() {
 function unflipCards() {
     memoryLockBoard = true;
     setTimeout(() => {
+        const memoryBoardElement = document.getElementById('memoryBoard');
         memoryFlippedCards.forEach(item => {
             const card = memoryBoardElement.children[item.index];
             if (card) card.classList.remove('flipped');
@@ -170,9 +208,6 @@ function unflipCards() {
         // Switch turn
         memoryCurrentPlayer = memoryCurrentPlayer === 1 ? 2 : 1;
         updateMemoryStatus();
-
-        // If online, we need to ensure turn sync happens naturally via moves, 
-        // but since we execute logic on both clients, it should stay synced.
     }, 1000);
 }
 
@@ -185,11 +220,14 @@ function updateScore(match) {
 }
 
 function updateMemoryScore() {
+    const memoryScore1 = document.getElementById('memoryScore1');
+    const memoryScore2 = document.getElementById('memoryScore2');
     if (memoryScore1) memoryScore1.innerText = memoryPlayer1Score;
     if (memoryScore2) memoryScore2.innerText = memoryPlayer2Score;
 }
 
 function updateMemoryStatus() {
+    const memoryStatusDisplay = document.getElementById('memoryStatusDisplay');
     if (memoryStatusDisplay) {
         if (memoryIsOnline) {
             const isMyTurn = memoryCurrentPlayer === memoryMyPlayer;
@@ -224,11 +262,13 @@ function initMemorySocket() {
     socket.on('memory-joined', (data) => {
         memoryMyPlayer = data.player; // 1 or 2
         memoryRoomId = data.roomId;
-        memoryOnlineStatus.innerText = `Joined Room: ${data.roomId}. You are Player ${data.player}. Waiting...`;
+        const memoryOnlineStatus = document.getElementById('memoryOnlineStatus');
+        if (memoryOnlineStatus) memoryOnlineStatus.innerText = `Joined Room: ${data.roomId}. You are Player ${data.player}. Waiting...`;
     });
 
     socket.on('memory-start', (data) => {
-        memoryOnlineStatus.innerText = "Game Starting!";
+        const memoryOnlineStatus = document.getElementById('memoryOnlineStatus');
+        if (memoryOnlineStatus) memoryOnlineStatus.innerText = "Game Starting!";
         startGameLogic(data.grid);
     });
 
@@ -241,21 +281,6 @@ function initMemorySocket() {
     });
 
     socket.on('memory-error', (msg) => { alert(msg); });
-}
-
-if (memoryCreateBtn) {
-    memoryCreateBtn.addEventListener('click', () => {
-        const roomId = memoryRoomInput.value.trim() || 'MEM-' + Math.floor(Math.random() * 1000);
-        socket.emit('create-memory-room', roomId);
-    });
-}
-
-if (memoryJoinBtn) {
-    memoryJoinBtn.addEventListener('click', () => {
-        const roomId = memoryRoomInput.value.trim();
-        if (roomId) socket.emit('join-memory-room', roomId);
-        else alert("Enter Room ID");
-    });
 }
 
 window.initMemory = initMemory;
