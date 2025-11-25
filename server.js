@@ -15,6 +15,8 @@ app.use(express.static(__dirname));
 // Socket.io connection handling
 const rooms = {};
 const c4Rooms = {};
+const businessRooms = {};
+const memoryRooms = {}; // Global memory rooms
 // connectedUsers: { socketId: { id: socketId, name: 'Guest' } }
 const connectedUsers = {};
 
@@ -285,7 +287,7 @@ io.on('connection', (socket) => {
     });
 
     // --- Memory Match Events ---
-    const memoryRooms = {};
+    // memoryRooms is now global
 
     socket.on('create-memory-room', (roomId) => {
         if (memoryRooms[roomId]) {
