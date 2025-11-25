@@ -250,8 +250,17 @@ function resetMemoryGame() {
 
 // --- Online Logic ---
 function initMemorySocket() {
-    if (typeof io === 'undefined') return;
-    if (!socket) socket = io('https://tictactoegame-zyid.onrender.com');
+    if (typeof io === 'undefined') {
+        console.error("Socket.io library not loaded");
+        return;
+    }
+
+    // Use global socket or create new one
+    if (!window.socket) {
+        window.socket = io('https://tictactoegame-zyid.onrender.com');
+    }
+    // Ensure local reference uses global socket
+    socket = window.socket;
 
     socket.off('memory-joined');
     socket.off('memory-start');
@@ -264,6 +273,7 @@ function initMemorySocket() {
         memoryRoomId = data.roomId;
         const memoryOnlineStatus = document.getElementById('memoryOnlineStatus');
         if (memoryOnlineStatus) memoryOnlineStatus.innerText = `Joined Room: ${data.roomId}. You are Player ${data.player}. Waiting...`;
+        console.log(`Joined memory room: ${data.roomId} as Player ${data.player}`);
     });
 
     socket.on('memory-start', (data) => {
@@ -280,7 +290,10 @@ function initMemorySocket() {
         startGameLogic(data.grid);
     });
 
-    socket.on('memory-error', (msg) => { alert(msg); });
+    socket.on('memory-error', (msg) => {
+        alert(msg);
+        console.error("Memory socket error:", msg);
+    });
 }
 
 window.initMemory = initMemory;
