@@ -62,6 +62,7 @@ const businessCreateBtn = document.getElementById('businessCreateBtn');
 
 function initBusiness() {
     showBusinessSetup();
+    // Initialize socket if not already done
     initBusinessSocket();
 }
 
@@ -71,11 +72,20 @@ function showBusinessSetup() {
 }
 
 function initBusinessSocket() {
-    if (typeof io === 'undefined' || !socket) {
-        if (typeof io !== 'undefined') socket = io('https://tictactoegame-zyid.onrender.com');
-        else return;
+    if (typeof io === 'undefined') {
+        console.error("Socket.io library not loaded");
+        return;
     }
 
+    // Use global socket or create new one
+    if (!window.socket) {
+        window.socket = io('https://tictactoegame-zyid.onrender.com');
+    }
+    // Assign the global socket to the local 'socket' variable for convenience if it's not already global
+    // Assuming 'socket' is a global variable or implicitly refers to window.socket
+    socket = window.socket;
+
+    // Remove existing listeners to avoid duplicates
     socket.off('business-joined');
     socket.off('business-start');
     socket.off('business-update');
@@ -88,6 +98,7 @@ function initBusinessSocket() {
     });
 
     socket.on('business-start', (data) => {
+        businessIsOnline = true;
         businessPlayers = data.players;
         businessTurnIndex = data.turnIndex;
         businessGameActive = true;

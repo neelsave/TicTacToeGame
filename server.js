@@ -284,6 +284,62 @@ io.on('connection', (socket) => {
         });
     });
 
+    // --- Memory Match Events ---
+    const memoryRooms = {};
+
+    socket.on('create-memory-room', (roomId) => {
+        if (memoryRooms[roomId]) {
+            socket.emit('memory-error', 'Room exists');
+            return;
+        }
+        memoryRooms[roomId] = {
+            players: [socket.id],
+            grid: [], // Will be generated on start
+            turn: 1
+        };
+        socket.join(roomId);
+        socket.emit('memory-joined', { roomId, player: 1 });
+    });
+
+    socket.on('join-memory-room', (roomId) => {
+        const room = memoryRooms[roomId];
+        if (!room) {
+            socket.emit('memory-error', 'Room not found');
+            return;
+        }
+        if (room.players.length >= 2) {
+            socket.emit('memory-error', 'Room full');
+            return;
+        }
+
+        room.players.push(socket.id);
+        socket.join(roomId);
+        socket.emit('memory-joined', { roomId, player: 2 });
+
+        if (room.players.length === 2) {
+            // Generate grid
+            const cards = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+            const grid = [...cards, ...cards].sort(() => 0.5 - Math.random());
+            room.grid = grid;
+
+            io.to(roomId).emit('memory-start', { grid });
+        }
+    });
+
+    socket.on('memory-flip', ({ roomId, index, icon }) => {
+        io.to(roomId).emit('memory-flip', { index, icon });
+    });
+
+    socket.on('memory-reset', (roomId) => {
+        const room = memoryRooms[roomId];
+        if (room) {
+            const cards = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+            const grid = [...cards, ...cards].sort(() => 0.5 - Math.random());
+            room.grid = grid;
+            io.to(roomId).emit('memory-reset', { grid });
+        }
+    });
+
     socket.on('disconnect', () => {
         delete connectedUsers[socket.id];
         io.emit('update-player-list', Object.values(connectedUsers));
@@ -306,6 +362,25 @@ io.on('connection', (socket) => {
                 room.players = room.players.filter(id => id !== socket.id);
                 io.to(roomId).emit('c4-player-left');
                 if (room.players.length === 0) delete c4Rooms[roomId];
+            }
+        }
+        // Handle cleanup for Business
+        for (const roomId in businessRooms) {
+            const room = businessRooms[roomId];
+            const pIdx = room.players.findIndex(p => p.id === socket.id);
+            if (pIdx !== -1) {
+                room.players.splice(pIdx, 1);
+                // Simple cleanup for now
+                if (room.players.length === 0) delete businessRooms[roomId];
+            }
+        }
+        // Handle cleanup for Memory
+        for (const roomId in memoryRooms) {
+            const room = memoryRooms[roomId];
+            if (room.players.includes(socket.id)) {
+                room.players = room.players.filter(id => id !== socket.id);
+                // io.to(roomId).emit('memory-player-left'); // Optional
+                if (room.players.length === 0) delete memoryRooms[roomId];
             }
         }
     });
