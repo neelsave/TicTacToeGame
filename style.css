@@ -2887,3 +2887,33 @@ body {
 .room-item button:hover {
     background: var(--primary-hover);
 }
+/* Developer Footer */
+.developer-footer {
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    margin-top: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.developer-footer strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+.developer-footer a {
+    color: #38bdf8;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.developer-footer a:hover {
+    color: #7dd3fc;
+    text-decoration: underline;
+}
