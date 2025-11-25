@@ -120,7 +120,10 @@ function initBusinessSocket() {
     socket.on('business-update', (data) => {
         businessPlayers = data.players;
         businessTurnIndex = data.turnIndex;
-        if (data.lastDice) businessDiceDisplay.innerText = `Dice: ${data.lastDice}`;
+        if (data.lastDice) {
+            const display = document.getElementById('centerDiceDisplay');
+            if (display) display.innerText = `Dice: ${data.lastDice}`;
+        }
         updateBusinessUI();
     });
 
@@ -216,49 +219,46 @@ function startLocalBusinessGame() {
 
 // ... (initBusinessSocket remains mostly same, but sets businessIsOnline = true on start)
 
-if (businessDiceBtn) {
-    businessDiceBtn.addEventListener('click', () => {
-        if (!businessGameActive) return;
-
-        if (businessIsOnline) {
-            // Check if my turn
-            if (businessPlayers[businessTurnIndex].id !== businessMyId) {
-                alert("Not your turn!");
-                return;
-            }
-            socket.emit('business-roll-dice', { roomId: businessRoomId });
-        } else {
-            // Local Play Logic
-            const dice1 = Math.floor(Math.random() * 6) + 1;
-            const dice2 = Math.floor(Math.random() * 6) + 1;
-            const total = dice1 + dice2;
-
-            const player = businessPlayers[businessTurnIndex];
-            player.position = (player.position + total) % 40;
-
-            // Next turn
-            businessTurnIndex = (businessTurnIndex + 1) % businessPlayers.length;
-
-            businessDiceDisplay.innerText = `Dice: ${total}`;
-            updateBusinessUI();
-        }
-    });
-}
+// Re-select elements dynamically or use global references if they are created dynamically
+// We will create them in renderBusinessBoard, so we need to attach listeners there or delegate.
+// Let's use a persistent object for the center controls to avoid re-creating them every render?
+// Actually, renderBusinessBoard is called once on start.
+// But updateBusinessUI is called often.
+// Let's make renderBusinessBoard create the structure.
 
 function renderBusinessBoard() {
     businessBoardElement.innerHTML = '';
 
-    // Add Center Logo/Area
+    // Center Container
     const centerDiv = document.createElement('div');
+    centerDiv.className = 'center-controls';
     centerDiv.style.gridColumn = "2 / span 9";
     centerDiv.style.gridRow = "2 / span 9";
-    centerDiv.style.display = "flex";
-    centerDiv.style.flexDirection = "column";
-    centerDiv.style.alignItems = "center";
-    centerDiv.style.justifyContent = "center";
-    centerDiv.innerHTML = "<h1>BUSINESS</h1><p>Indian Edition</p>";
+
+    // Title
+    centerDiv.innerHTML = `
+        <div class="center-title">BUSINESS</div>
+        <div class="center-subtitle">Indian Edition</div>
+        
+        <div class="dice-area">
+            <div id="centerDiceDisplay" class="dice-display">Dice: -</div>
+            <button id="centerDiceBtn" class="btn-roll">ROLL DICE</button>
+        </div>
+        
+        <div class="center-players">
+            <ul id="centerPlayersList"></ul>
+        </div>
+    `;
+
     businessBoardElement.appendChild(centerDiv);
 
+    // Attach Listeners to new elements
+    const diceBtn = document.getElementById('centerDiceBtn');
+    if (diceBtn) {
+        diceBtn.onclick = handleDiceRoll;
+    }
+
+    // Render Cells
     BUSINESS_BOARD.forEach((cell, index) => {
         const cellDiv = document.createElement('div');
         cellDiv.className = `business-cell ${cell.type} ${cell.color}`;
@@ -316,15 +316,40 @@ function renderBusinessBoard() {
     });
 }
 
+function handleDiceRoll() {
+    if (!businessGameActive) return;
+
+    if (businessIsOnline) {
+        if (businessPlayers[businessTurnIndex].id !== businessMyId) {
+            alert("Not your turn!");
+            return;
+        }
+        socket.emit('business-roll-dice', { roomId: businessRoomId });
+    } else {
+        // Local Play
+        const dice1 = Math.floor(Math.random() * 6) + 1;
+        const dice2 = Math.floor(Math.random() * 6) + 1;
+        const total = dice1 + dice2;
+
+        const player = businessPlayers[businessTurnIndex];
+        player.position = (player.position + total) % 40;
+
+        businessTurnIndex = (businessTurnIndex + 1) % businessPlayers.length;
+
+        // Update UI directly for local
+        const display = document.getElementById('centerDiceDisplay');
+        if (display) display.innerText = `Dice: ${total}`;
+        updateBusinessUI();
+    }
+}
+
 function updateBusinessUI() {
-    // Update Turn
+    // Update Status
     const currentName = businessPlayers[businessTurnIndex].id === businessMyId ? "You" : `Player ${businessTurnIndex + 1}`;
-    businessStatus.innerText = `Turn: ${currentName}`;
+    if (businessStatus) businessStatus.innerText = `Turn: ${currentName}`;
 
     // Update Player Positions
-    // Clear all previous positions
     document.querySelectorAll('.cell-players').forEach(el => el.innerHTML = '');
-
     businessPlayers.forEach((p, idx) => {
         const container = document.getElementById(`cell-players-${p.position}`);
         if (container) {
@@ -335,14 +360,17 @@ function updateBusinessUI() {
         }
     });
 
-    // Update Player List (Money, etc.)
-    businessPlayersList.innerHTML = '';
-    businessPlayers.forEach((p, idx) => {
-        const li = document.createElement('li');
-        li.innerText = `P${idx + 1}: ₹${p.money} - ${p.id === businessMyId ? '(You)' : ''}`;
-        if (idx === businessTurnIndex) li.style.fontWeight = 'bold';
-        businessPlayersList.appendChild(li);
-    });
+    // Update Center Player List
+    const list = document.getElementById('centerPlayersList');
+    if (list) {
+        list.innerHTML = '';
+        businessPlayers.forEach((p, idx) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>P${idx + 1}</span> <span>₹${p.money}</span>`;
+            if (idx === businessTurnIndex) li.classList.add('active-turn');
+            list.appendChild(li);
+        });
+    }
 }
 
 // Global exposure
