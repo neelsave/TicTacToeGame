@@ -2572,3 +2572,123 @@ body {
     color: white;
     font-size: 0.8rem;
 }
+
+/* --- Business Game --- */
+.business-layout {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.business-board {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+    gap: 2px;
+    width: 600px;
+    height: 600px;
+    background: #dcfce7;
+    /* Light green bg */
+    border: 5px solid #1e293b;
+    position: relative;
+}
+
+.business-cell {
+    background: white;
+    border: 1px solid #cbd5e1;
+    font-size: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 2px;
+}
+
+.business-cell.corner {
+    background: #e2e8f0;
+    font-weight: bold;
+}
+
+.business-cell.brown {
+    border-top: 4px solid #854d0e;
+}
+
+.business-cell.lightblue {
+    border-top: 4px solid #7dd3fc;
+}
+
+.business-cell.pink {
+    border-top: 4px solid #f472b6;
+}
+
+.business-cell.orange {
+    border-top: 4px solid #fb923c;
+}
+
+.business-cell.red {
+    border-top: 4px solid #ef4444;
+}
+
+.business-cell.yellow {
+    border-top: 4px solid #facc15;
+}
+
+.business-cell.green {
+    border-top: 4px solid #22c55e;
+}
+
+.business-cell.darkblue {
+    border-top: 4px solid #1e3a8a;
+}
+
+.cell-players {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+}
+
+.player-token {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    font-size: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.player-token.p1 {
+    background: red;
+}
+
+.player-token.p2 {
+    background: blue;
+}
+
+.player-token.p3 {
+    background: green;
+}
+
+.player-token.p4 {
+    background: orange;
+}
+
+.business-sidebar {
+    width: 250px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dice-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}

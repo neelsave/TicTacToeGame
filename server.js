@@ -221,6 +221,69 @@ io.on('connection', (socket) => {
         }
     });
 
+    // --- Business Game Events ---
+    const businessRooms = {};
+
+    socket.on('create-business-room', (roomId) => {
+        if (businessRooms[roomId]) {
+            socket.emit('business-error', 'Room exists');
+            return;
+        }
+        businessRooms[roomId] = {
+            players: [{ id: socket.id, money: 1500, position: 0, properties: [] }],
+            turnIndex: 0,
+            gameActive: false
+        };
+        socket.join(roomId);
+        socket.emit('business-joined', { roomId });
+    });
+
+    socket.on('join-business-room', (roomId) => {
+        const room = businessRooms[roomId];
+        if (!room) {
+            socket.emit('business-error', 'Room not found');
+            return;
+        }
+        if (room.players.length >= 4) {
+            socket.emit('business-error', 'Room full');
+            return;
+        }
+
+        room.players.push({ id: socket.id, money: 1500, position: 0, properties: [] });
+        socket.join(roomId);
+        socket.emit('business-joined', { roomId });
+
+        // Auto-start if 2+ players (for testing) or wait for explicit start?
+        // Let's auto-start for now or just broadcast update
+        if (room.players.length >= 2) {
+            io.to(roomId).emit('business-start', {
+                players: room.players,
+                turnIndex: room.turnIndex
+            });
+        }
+    });
+
+    socket.on('business-roll-dice', ({ roomId }) => {
+        const room = businessRooms[roomId];
+        if (!room) return;
+
+        const dice1 = Math.floor(Math.random() * 6) + 1;
+        const dice2 = Math.floor(Math.random() * 6) + 1;
+        const total = dice1 + dice2;
+
+        const player = room.players[room.turnIndex];
+        player.position = (player.position + total) % 40;
+
+        // Next turn
+        room.turnIndex = (room.turnIndex + 1) % room.players.length;
+
+        io.to(roomId).emit('business-update', {
+            players: room.players,
+            turnIndex: room.turnIndex,
+            lastDice: total
+        });
+    });
+
     socket.on('disconnect', () => {
         delete connectedUsers[socket.id];
         io.emit('update-player-list', Object.values(connectedUsers));
