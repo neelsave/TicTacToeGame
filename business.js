@@ -120,6 +120,39 @@ function initBusinessSocket() {
     socket.on('business-error', (msg) => {
         alert(msg);
     });
+
+    socket.on('room-list-update', (data) => {
+        if (data.type === 'business') {
+            renderBusinessRoomList(data.rooms);
+        }
+    });
+
+    // Request initial list
+    socket.emit('get-rooms', 'business');
+}
+
+function renderBusinessRoomList(rooms) {
+    const list = document.getElementById('businessRoomList');
+    if (!list) return;
+    list.innerHTML = '<h3>Available Rooms:</h3>';
+    if (rooms.length === 0) {
+        list.innerHTML += '<p>No active rooms</p>';
+        return;
+    }
+    rooms.forEach(room => {
+        const div = document.createElement('div');
+        div.className = 'room-item';
+        div.innerHTML = `<span>${room.id} (${room.count}/4)</span>`;
+        const btn = document.createElement('button');
+        btn.innerText = 'Join';
+        btn.onclick = () => {
+            const input = document.getElementById('businessRoomInput');
+            if (input) input.value = room.id;
+            socket.emit('join-business-room', room.id);
+        };
+        div.appendChild(btn);
+        list.appendChild(div);
+    });
 }
 
 if (businessCreateBtn) {

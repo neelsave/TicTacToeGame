@@ -60,6 +60,7 @@ io.on('connection', (socket) => {
         socket.join(roomId);
         socket.emit('room-created', roomId); // Confirm creation
         socket.emit('player-assigned', 'X'); // Creator is X
+        broadcastRoomList('tictactoe');
     });
 
     // Join Room
@@ -85,6 +86,7 @@ io.on('connection', (socket) => {
 
         socket.emit('room-joined', roomId);
         socket.emit('player-assigned', 'O'); // Joiner is O
+        broadcastRoomList('tictactoe');
 
         // Notify both that game can start
         if (room.players.length === 2) {
@@ -172,6 +174,7 @@ io.on('connection', (socket) => {
         // Assign color
         const color = room.players.length === 1 ? 'Red' : 'Yellow';
         socket.emit('c4-player-assigned', color);
+        broadcastRoomList('connect4');
 
         // Notify start
         if (room.players.length === 2) {
@@ -224,7 +227,7 @@ io.on('connection', (socket) => {
     });
 
     // --- Business Game Events ---
-    const businessRooms = {};
+    // businessRooms is now global
 
     socket.on('create-business-room', (roomId) => {
         if (businessRooms[roomId]) {
@@ -238,6 +241,7 @@ io.on('connection', (socket) => {
         };
         socket.join(roomId);
         socket.emit('business-joined', { roomId });
+        broadcastRoomList('business');
     });
 
     socket.on('join-business-room', (roomId) => {
@@ -254,6 +258,7 @@ io.on('connection', (socket) => {
         room.players.push({ id: socket.id, money: 1500, position: 0, properties: [] });
         socket.join(roomId);
         socket.emit('business-joined', { roomId });
+        broadcastRoomList('business');
 
         // Auto-start if 2+ players (for testing) or wait for explicit start?
         // Let's auto-start for now or just broadcast update
@@ -301,6 +306,7 @@ io.on('connection', (socket) => {
         };
         socket.join(roomId);
         socket.emit('memory-joined', { roomId, player: 1 });
+        broadcastRoomList('memory');
     });
 
     socket.on('join-memory-room', (roomId) => {
@@ -317,6 +323,7 @@ io.on('connection', (socket) => {
         room.players.push(socket.id);
         socket.join(roomId);
         socket.emit('memory-joined', { roomId, player: 2 });
+        broadcastRoomList('memory');
 
         if (room.players.length === 2) {
             // Generate grid
@@ -381,12 +388,48 @@ io.on('connection', (socket) => {
             const room = memoryRooms[roomId];
             if (room.players.includes(socket.id)) {
                 room.players = room.players.filter(id => id !== socket.id);
-                // io.to(roomId).emit('memory-player-left'); // Optional
-                if (room.players.length === 0) delete memoryRooms[roomId];
+                if (room.players.length === 0) {
+                    delete memoryRooms[roomId];
+                }
             }
         }
+
+        broadcastRoomList('tictactoe');
+        broadcastRoomList('connect4');
+        broadcastRoomList('business');
+        broadcastRoomList('memory');
+    });
+
+    socket.on('get-rooms', (type) => {
+        broadcastRoomList(type, socket.id);
     });
 });
+
+function broadcastRoomList(type, socketId = null) {
+    let targetRooms = {};
+    if (type === 'tictactoe') targetRooms = rooms;
+    else if (type === 'connect4') targetRooms = c4Rooms;
+    else if (type === 'business') targetRooms = businessRooms;
+    else if (type === 'memory') targetRooms = memoryRooms;
+
+    const roomList = [];
+    for (const id in targetRooms) {
+        const r = targetRooms[id];
+        let count = 0;
+        if (type === 'business') count = r.players.length;
+        else if (type === 'tictactoe' || type === 'connect4' || type === 'memory') count = r.players.length;
+
+        // Optional: Filter full rooms? User asked to see available rooms.
+        // Let's send all, client can decide or show "Full"
+        roomList.push({ id, count });
+    }
+
+    if (socketId) {
+        io.to(socketId).emit('room-list-update', { type, rooms: roomList });
+    } else {
+        io.emit('room-list-update', { type, rooms: roomList });
+    }
+}
 
 // Start server
 const PORT = process.env.PORT || 3000;

@@ -350,6 +350,15 @@ function initSocket() {
             onlineStatus.style.color = '#ef4444';
         });
 
+        socket.on('room-list-update', (data) => {
+            if (data.type === 'tictactoe') {
+                renderTicTacToeRoomList(data.rooms);
+            }
+        });
+
+        // Request initial list
+        socket.emit('get-rooms', 'tictactoe');
+
         socket.on('player-assigned', (role) => {
             myPlayer = role;
             console.log("Assigned role:", role);

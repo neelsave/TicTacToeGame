@@ -294,7 +294,41 @@ function initMemorySocket() {
         alert(msg);
         console.error("Memory socket error:", msg);
     });
+
+    socket.on('room-list-update', (data) => {
+        if (data.type === 'memory') {
+            renderMemoryRoomList(data.rooms);
+        }
+    });
+
+    // Request initial list
+    socket.emit('get-rooms', 'memory');
+}
+
+function renderMemoryRoomList(rooms) {
+    const list = document.getElementById('memoryRoomList');
+    if (!list) return;
+    list.innerHTML = '<h3>Available Rooms:</h3>';
+    if (rooms.length === 0) {
+        list.innerHTML += '<p>No active rooms</p>';
+        return;
+    }
+    rooms.forEach(room => {
+        const div = document.createElement('div');
+        div.className = 'room-item';
+        div.innerHTML = `<span>${room.id} (${room.count}/2)</span>`;
+        const btn = document.createElement('button');
+        btn.innerText = 'Join';
+        btn.onclick = () => {
+            const input = document.getElementById('memoryRoomInput');
+            if (input) input.value = room.id;
+            socket.emit('join-memory-room', room.id);
+        };
+        div.appendChild(btn);
+        list.appendChild(div);
+    });
 }
 
 window.initMemory = initMemory;
 window.resetMemoryGame = resetMemoryGame;
+```

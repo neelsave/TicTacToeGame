@@ -172,6 +172,15 @@ function initC4Socket() {
         c4OnlineStatus.style.color = '#ef4444';
     });
 
+    socket.on('room-list-update', (data) => {
+        if (data.type === 'connect4') {
+            renderC4RoomList(data.rooms);
+        }
+    });
+
+    // Request initial list
+    socket.emit('get-rooms', 'connect4');
+
     socket.on('c4-player-left', () => {
         alert("Opponent left the game.");
         showC4Setup();
