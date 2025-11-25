@@ -380,22 +380,186 @@ function checkDirection(row, col, rowDir, colDir) {
     return count >= 4;
 }
 // AI Logic
+// AI Logic - Minimax with Alpha-Beta Pruning
 function makeC4ComputerMove() {
     if (!c4GameActive) return;
 
-    // Simple AI: Pick random valid column
-    // TODO: Implement Minimax for smarter AI
-    const validCols = [];
-    for (let c = 0; c < C4_COLS; c++) {
-        if (c4Board[0][c] === 0) {
-            validCols.push(c);
+    // Depth 4 is a good balance for browser performance vs intelligence
+    const [col, minimaxScore] = minimax(c4Board, 4, -Infinity, Infinity, true);
+
+    if (col !== null && col !== undefined) {
+        handleC4Click(col);
+    } else {
+        // Fallback to random if something goes wrong
+        const validCols = getValidLocations(c4Board);
+        if (validCols.length > 0) {
+            const randomCol = validCols[Math.floor(Math.random() * validCols.length)];
+            handleC4Click(randomCol);
+        }
+    }
+}
+
+function minimax(board, depth, alpha, beta, maximizingPlayer) {
+    const validLocations = getValidLocations(board);
+    const isTerminal = isTerminalNode(board);
+
+    if (depth === 0 || isTerminal) {
+        if (isTerminal) {
+            if (winningMove(board, 2)) return [null, 1000000000]; // AI Wins
+            else if (winningMove(board, 1)) return [null, -1000000000]; // Player Wins
+            else return [null, 0]; // Draw
+        } else {
+            return [null, scorePosition(board, 2)];
         }
     }
 
-    if (validCols.length > 0) {
-        const randomCol = validCols[Math.floor(Math.random() * validCols.length)];
-        handleC4Click(randomCol);
+    if (maximizingPlayer) {
+        let value = -Infinity;
+        let column = validLocations[Math.floor(Math.random() * validLocations.length)];
+        for (const col of validLocations) {
+            const row = getNextOpenRow(board, col);
+            const bCopy = board.map(r => [...r]);
+            dropPiece(bCopy, row, col, 2);
+            const newScore = minimax(bCopy, depth - 1, alpha, beta, false)[1];
+            if (newScore > value) {
+                value = newScore;
+                column = col;
+            }
+            alpha = Math.max(alpha, value);
+            if (alpha >= beta) break;
+        }
+        return [column, value];
+    } else {
+        let value = Infinity;
+        let column = validLocations[Math.floor(Math.random() * validLocations.length)];
+        for (const col of validLocations) {
+            const row = getNextOpenRow(board, col);
+            const bCopy = board.map(r => [...r]);
+            dropPiece(bCopy, row, col, 1);
+            const newScore = minimax(bCopy, depth - 1, alpha, beta, true)[1];
+            if (newScore < value) {
+                value = newScore;
+                column = col;
+            }
+            beta = Math.min(beta, value);
+            if (alpha >= beta) break;
+        }
+        return [column, value];
     }
+}
+
+function scorePosition(board, piece) {
+    let score = 0;
+
+    // Center Column Preference
+    const centerArray = [];
+    for (let r = 0; r < C4_ROWS; r++) {
+        centerArray.push(board[r][Math.floor(C4_COLS / 2)]);
+    }
+    const centerCount = centerArray.filter(x => x === piece).length;
+    score += centerCount * 3;
+
+    // Horizontal
+    for (let r = 0; r < C4_ROWS; r++) {
+        const rowArray = board[r];
+        for (let c = 0; c < C4_COLS - 3; c++) {
+            const window = rowArray.slice(c, c + 4);
+            score += evaluateWindow(window, piece);
+        }
+    }
+
+    // Vertical
+    for (let c = 0; c < C4_COLS; c++) {
+        const colArray = [];
+        for (let r = 0; r < C4_ROWS; r++) {
+            colArray.push(board[r][c]);
+        }
+        for (let r = 0; r < C4_ROWS - 3; r++) {
+            const window = colArray.slice(r, r + 4);
+            score += evaluateWindow(window, piece);
+        }
+    }
+
+    // Positive Slope Diagonal
+    for (let r = 0; r < C4_ROWS - 3; r++) {
+        for (let c = 0; c < C4_COLS - 3; c++) {
+            const window = [board[r][c], board[r + 1][c + 1], board[r + 2][c + 2], board[r + 3][c + 3]];
+            score += evaluateWindow(window, piece);
+        }
+    }
+
+    // Negative Slope Diagonal
+    for (let r = 0; r < C4_ROWS - 3; r++) {
+        for (let c = 0; c < C4_COLS - 3; c++) {
+            const window = [board[r + 3][c], board[r + 2][c + 1], board[r + 1][c + 2], board[r][c + 3]];
+            score += evaluateWindow(window, piece);
+        }
+    }
+
+    return score;
+}
+
+function evaluateWindow(window, piece) {
+    let score = 0;
+    const oppPiece = piece === 1 ? 2 : 1;
+
+    const pieceCount = window.filter(x => x === piece).length;
+    const emptyCount = window.filter(x => x === 0).length;
+    const oppCount = window.filter(x => x === oppPiece).length;
+
+    if (pieceCount === 4) score += 100;
+    else if (pieceCount === 3 && emptyCount === 1) score += 5;
+    else if (pieceCount === 2 && emptyCount === 2) score += 2;
+
+    if (oppCount === 3 && emptyCount === 1) score -= 4;
+
+    return score;
+}
+
+function getValidLocations(board) {
+    const valid = [];
+    for (let c = 0; c < C4_COLS; c++) {
+        if (board[0][c] === 0) valid.push(c);
+    }
+    return valid;
+}
+
+function isTerminalNode(board) {
+    return winningMove(board, 1) || winningMove(board, 2) || getValidLocations(board).length === 0;
+}
+
+function winningMove(board, piece) {
+    // Horizontal
+    for (let c = 0; c < C4_COLS - 3; c++) {
+        for (let r = 0; r < C4_ROWS; r++) {
+            if (board[r][c] == piece && board[r][c + 1] == piece && board[r][c + 2] == piece && board[r][c + 3] == piece) return true;
+        }
+    }
+    // Vertical
+    for (let c = 0; c < C4_COLS; c++) {
+        for (let r = 0; r < C4_ROWS - 3; r++) {
+            if (board[r][c] == piece && board[r + 1][c] == piece && board[r + 2][c] == piece && board[r + 3][c] == piece) return true;
+        }
+    }
+    // Diagonals
+    for (let c = 0; c < C4_COLS - 3; c++) {
+        for (let r = 0; r < C4_ROWS - 3; r++) {
+            if (board[r][c] == piece && board[r + 1][c + 1] == piece && board[r + 2][c + 2] == piece && board[r + 3][c + 3] == piece) return true;
+            if (board[r][c + 3] == piece && board[r + 1][c + 2] == piece && board[r + 2][c + 1] == piece && board[r + 3][c] == piece) return true;
+        }
+    }
+    return false;
+}
+
+function getNextOpenRow(board, col) {
+    for (let r = C4_ROWS - 1; r >= 0; r--) {
+        if (board[r][col] == 0) return r;
+    }
+    return -1;
+}
+
+function dropPiece(board, row, col, piece) {
+    board[row][col] = piece;
 }
 function checkC4Draw() {
     return c4Board.every(row => row.every(cell => cell !== 0));
