@@ -2615,6 +2615,7 @@ body {
     overflow: hidden;
     border-radius: 2px;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s;
 }
 
 .business-cell.corner {
@@ -2623,50 +2624,70 @@ body {
     font-size: 0.8rem;
     justify-content: center;
     color: #334155;
+    z-index: 2;
 }
 
-.cell-color-bar {
-    width: 100%;
-    height: 25%;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+/* Full Color Cells */
+.business-cell.brown {
+    background: #d7ccc8;
+    border: 2px solid #8d6e63;
 }
 
-/* Specific Colors - Vibrant */
-.business-cell.brown .cell-color-bar {
-    background: #8B4513;
+.business-cell.lightblue {
+    background: #b3e5fc;
+    border: 2px solid #29b6f6;
 }
 
-.business-cell.lightblue .cell-color-bar {
-    background: #38bdf8;
+.business-cell.pink {
+    background: #f8bbd0;
+    border: 2px solid #ec407a;
 }
 
-.business-cell.pink .cell-color-bar {
-    background: #f472b6;
+.business-cell.orange {
+    background: #ffe0b2;
+    border: 2px solid #ffa726;
 }
 
-.business-cell.orange .cell-color-bar {
-    background: #fb923c;
+.business-cell.red {
+    background: #ffcdd2;
+    border: 2px solid #ef5350;
 }
 
-.business-cell.red .cell-color-bar {
-    background: #ef4444;
+.business-cell.yellow {
+    background: #fff9c4;
+    border: 2px solid #fdd835;
 }
 
-.business-cell.yellow .cell-color-bar {
-    background: #facc15;
+.business-cell.green {
+    background: #c8e6c9;
+    border: 2px solid #66bb6a;
 }
 
-.business-cell.green .cell-color-bar {
-    background: #22c55e;
+.business-cell.darkblue {
+    background: #c5cae9;
+    border: 2px solid #5c6bc0;
 }
 
-.business-cell.darkblue .cell-color-bar {
-    background: #1e40af;
+/* Ownership Indicators */
+.business-cell.owned-p1 {
+    box-shadow: inset 0 0 0 4px #ef4444;
+}
+
+.business-cell.owned-p2 {
+    box-shadow: inset 0 0 0 4px #3b82f6;
+}
+
+.business-cell.owned-p3 {
+    box-shadow: inset 0 0 0 4px #22c55e;
+}
+
+.business-cell.owned-p4 {
+    box-shadow: inset 0 0 0 4px #f59e0b;
 }
 
 .cell-name {
     font-weight: 700;
-    margin-top: 2px;
+    margin-top: 4px;
     line-height: 1.1;
     color: #0f172a;
     width: 100%;
@@ -2674,6 +2695,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0 2px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .cell-price {
@@ -2887,6 +2909,7 @@ body {
 .room-item button:hover {
     background: var(--primary-hover);
 }
+
 /* Developer Footer */
 .developer-footer {
     width: 100%;

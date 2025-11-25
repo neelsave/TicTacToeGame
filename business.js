@@ -184,31 +184,18 @@ if (businessJoinBtn) {
 
 // ... (existing variables)
 
-function initBusiness() {
-    showBusinessSetup();
-    // Initialize socket if not already done
-    initBusinessSocket();
-
-    // Attach Local Play Listener
-    const localBtn = document.getElementById('businessLocalBtn');
-    if (localBtn) {
-        localBtn.onclick = startLocalBusinessGame;
-    }
-}
-
 function startLocalBusinessGame() {
     businessIsOnline = false;
     businessPlayers = [
-        { id: 'P1', money: 1500, position: 0, properties: [] },
-        { id: 'P2', money: 1500, position: 0, properties: [] },
-        { id: 'P3', money: 1500, position: 0, properties: [] },
-        { id: 'P4', money: 1500, position: 0, properties: [] }
+        { id: 'P1', money: 1500, position: 0, properties: [], color: 'red' },
+        { id: 'P2', money: 1500, position: 0, properties: [], color: 'blue' },
+        { id: 'P3', money: 1500, position: 0, properties: [], color: 'green' },
+        { id: 'P4', money: 1500, position: 0, properties: [], color: 'orange' }
     ];
+    businessProperties = {}; // Reset properties
     businessTurnIndex = 0;
     businessGameActive = true;
-    businessMyId = 'P1'; // For local play, we act as all, or just P1? 
-    // Actually for local play, we don't need to check IDs strictly, or we treat "MyId" as current player?
-    // Let's just allow dice roll always.
+    businessMyId = null;
 
     businessSetupScreen.classList.add('hidden');
     businessGameContainer.classList.remove('hidden');
@@ -262,20 +249,11 @@ function renderBusinessBoard() {
     BUSINESS_BOARD.forEach((cell, index) => {
         const cellDiv = document.createElement('div');
         cellDiv.className = `business-cell ${cell.type} ${cell.color}`;
+        cellDiv.id = `cell-${cell.id}`; // Add ID for easy access
         cellDiv.dataset.id = cell.id;
 
-        // Calculate Grid Position (11x11)
-        // 0 (GO): 11, 11 (Bottom Right)
-        // 1-9: Bottom Row (Right to Left) -> Row 11, Col 10 to 2
-        // 10 (Jail): 11, 1 (Bottom Left)
-        // 11-19: Left Col (Bottom to Top) -> Row 10 to 2, Col 1
-        // 20 (Free Parking): 1, 1 (Top Left)
-        // 21-29: Top Row (Left to Right) -> Row 1, Col 2 to 10
-        // 30 (Go To Jail): 1, 11 (Top Right)
-        // 31-39: Right Col (Top to Bottom) -> Row 2 to 10, Col 11
-
+        // Grid Positioning Logic
         let row, col;
-
         if (index === 0) { row = 11; col = 11; }
         else if (index < 10) { row = 11; col = 11 - index; }
         else if (index === 10) { row = 11; col = 1; }
@@ -288,13 +266,7 @@ function renderBusinessBoard() {
         cellDiv.style.gridRow = row;
         cellDiv.style.gridColumn = col;
 
-        // Inner Content
-        if (cell.type === 'property') {
-            const colorBar = document.createElement('div');
-            colorBar.className = 'cell-color-bar';
-            cellDiv.appendChild(colorBar);
-        }
-
+        // Inner Content - No Color Bar, Full Background
         const name = document.createElement('div');
         name.className = 'cell-name';
         name.innerText = cell.name;
@@ -316,10 +288,13 @@ function renderBusinessBoard() {
     });
 }
 
+let isAnimating = false;
+
 function handleDiceRoll() {
-    if (!businessGameActive) return;
+    if (!businessGameActive || isAnimating) return;
 
     if (businessIsOnline) {
+        // ... Online logic (keep as is for now, or update to match local)
         if (businessPlayers[businessTurnIndex].id !== businessMyId) {
             alert("Not your turn!");
             return;
@@ -327,20 +302,99 @@ function handleDiceRoll() {
         socket.emit('business-roll-dice', { roomId: businessRoomId });
     } else {
         // Local Play
-        const dice1 = Math.floor(Math.random() * 6) + 1;
-        const dice2 = Math.floor(Math.random() * 6) + 1;
-        const total = dice1 + dice2;
-
-        const player = businessPlayers[businessTurnIndex];
-        player.position = (player.position + total) % 40;
-
-        businessTurnIndex = (businessTurnIndex + 1) % businessPlayers.length;
-
-        // Update UI directly for local
+        const dice = Math.floor(Math.random() * 6) + 1; // 1-6
         const display = document.getElementById('centerDiceDisplay');
-        if (display) display.innerText = `Dice: ${total}`;
-        updateBusinessUI();
+        if (display) display.innerText = `Dice: ${dice}`;
+
+        moveTokenAnimated(businessTurnIndex, dice);
     }
+}
+
+function moveTokenAnimated(playerIdx, steps) {
+    isAnimating = true;
+    let stepsLeft = steps;
+    const player = businessPlayers[playerIdx];
+
+    const interval = setInterval(() => {
+        if (stepsLeft > 0) {
+            player.position = (player.position + 1) % 40;
+            stepsLeft--;
+            updateBusinessUI(); // Re-render tokens
+        } else {
+            clearInterval(interval);
+            isAnimating = false;
+            handleTurnEnd(playerIdx);
+        }
+    }, 300); // 300ms per step
+}
+
+function handleTurnEnd(playerIdx) {
+    const player = businessPlayers[playerIdx];
+    const cell = BUSINESS_BOARD[player.position];
+
+    // Check Cell Type
+    if (cell.type === 'property' || cell.type === 'railroad' || cell.type === 'utility') {
+        handlePropertyLand(player, cell, playerIdx);
+    } else if (cell.type === 'tax') {
+        player.money -= cell.price;
+        alert(`Paid Tax: ₹${cell.price}`);
+        nextTurn();
+    } else if (cell.type === 'corner') {
+        // GO, Jail, etc.
+        if (cell.id === 30) { // Go To Jail
+            player.position = 10; // Jail
+            alert("Go to Jail!");
+            updateBusinessUI();
+        }
+        nextTurn();
+    } else {
+        nextTurn();
+    }
+}
+
+function handlePropertyLand(player, cell, playerIdx) {
+    const prop = businessProperties[cell.id];
+
+    if (!prop) {
+        // Unowned - Buy?
+        if (player.money >= cell.price) {
+            // Simple confirm for now, can be upgraded to modal
+            if (confirm(`Buy ${cell.name} for ₹${cell.price}?`)) {
+                player.money -= cell.price;
+                businessProperties[cell.id] = { owner: playerIdx };
+                player.properties.push(cell.id);
+                alert(`Bought ${cell.name}!`);
+            }
+        } else {
+            // Not enough money
+        }
+        nextTurn();
+    } else {
+        // Owned
+        if (prop.owner !== playerIdx) {
+            // Pay Rent
+            const owner = businessPlayers[prop.owner];
+            let rent = cell.rent || 0;
+            // Logic for Railroad/Utility rent calculation could go here
+
+            if (player.money >= rent) {
+                player.money -= rent;
+                owner.money += rent;
+                alert(`Paid Rent ₹${rent} to P${prop.owner + 1}`);
+            } else {
+                // Bankrupt logic (simplified: take all money)
+                owner.money += player.money;
+                player.money = 0;
+                alert(`Paid Rent ₹${player.money} (Bankrupt!)`);
+            }
+        }
+        nextTurn();
+    }
+}
+
+function nextTurn() {
+    businessTurnIndex = (businessTurnIndex + 1) % businessPlayers.length;
+    updateBusinessUI();
 }
 
 function updateBusinessUI() {
@@ -360,6 +414,15 @@ function updateBusinessUI() {
         }
     });
 
+    // Update Property Ownership Visuals
+    document.querySelectorAll('.business-cell').forEach(el => {
+        el.classList.remove('owned-p1', 'owned-p2', 'owned-p3', 'owned-p4');
+        const id = el.dataset.id;
+        if (businessProperties[id]) {
+            el.classList.add(`owned-p${businessProperties[id].owner + 1}`);
+        }
+    });
+
     // Update Center Player List
     const list = document.getElementById('centerPlayersList');
     if (list) {
@@ -368,6 +431,10 @@ function updateBusinessUI() {
             const li = document.createElement('li');
             li.innerHTML = `<span>P${idx + 1}</span> <span>₹${p.money}</span>`;
             if (idx === businessTurnIndex) li.classList.add('active-turn');
+
+            // Add Sell Button if current player (simplified)
+            // For now just show money
+
             list.appendChild(li);
         });
     }
