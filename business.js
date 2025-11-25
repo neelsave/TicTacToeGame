@@ -46,6 +46,7 @@ let businessMyId = null;
 let businessRoomId = null;
 let businessTurnIndex = 0;
 let businessGameActive = false;
+let businessIsOnline = false;
 
 const businessBoardElement = document.getElementById('businessBoard');
 const businessStatus = document.getElementById('businessStatus');
@@ -64,6 +65,12 @@ function initBusiness() {
     showBusinessSetup();
     // Initialize socket if not already done
     initBusinessSocket();
+
+    // Attach Local Play Listener
+    const localBtn = document.getElementById('businessLocalBtn');
+    if (localBtn) {
+        localBtn.onclick = startLocalBusinessGame;
+    }
 }
 
 function showBusinessSetup() {
@@ -170,15 +177,71 @@ if (businessJoinBtn) {
     });
 }
 
+let businessIsOnline = false;
+
+// ... (existing variables)
+
+function initBusiness() {
+    showBusinessSetup();
+    // Initialize socket if not already done
+    initBusinessSocket();
+
+    // Attach Local Play Listener
+    const localBtn = document.getElementById('businessLocalBtn');
+    if (localBtn) {
+        localBtn.onclick = startLocalBusinessGame;
+    }
+}
+
+function startLocalBusinessGame() {
+    businessIsOnline = false;
+    businessPlayers = [
+        { id: 'P1', money: 1500, position: 0, properties: [] },
+        { id: 'P2', money: 1500, position: 0, properties: [] },
+        { id: 'P3', money: 1500, position: 0, properties: [] },
+        { id: 'P4', money: 1500, position: 0, properties: [] }
+    ];
+    businessTurnIndex = 0;
+    businessGameActive = true;
+    businessMyId = 'P1'; // For local play, we act as all, or just P1? 
+    // Actually for local play, we don't need to check IDs strictly, or we treat "MyId" as current player?
+    // Let's just allow dice roll always.
+
+    businessSetupScreen.classList.add('hidden');
+    businessGameContainer.classList.remove('hidden');
+
+    renderBusinessBoard();
+    updateBusinessUI();
+}
+
+// ... (initBusinessSocket remains mostly same, but sets businessIsOnline = true on start)
+
 if (businessDiceBtn) {
     businessDiceBtn.addEventListener('click', () => {
         if (!businessGameActive) return;
-        // Check if my turn
-        if (businessPlayers[businessTurnIndex].id !== businessMyId) {
-            alert("Not your turn!");
-            return;
+
+        if (businessIsOnline) {
+            // Check if my turn
+            if (businessPlayers[businessTurnIndex].id !== businessMyId) {
+                alert("Not your turn!");
+                return;
+            }
+            socket.emit('business-roll-dice', { roomId: businessRoomId });
+        } else {
+            // Local Play Logic
+            const dice1 = Math.floor(Math.random() * 6) + 1;
+            const dice2 = Math.floor(Math.random() * 6) + 1;
+            const total = dice1 + dice2;
+
+            const player = businessPlayers[businessTurnIndex];
+            player.position = (player.position + total) % 40;
+
+            // Next turn
+            businessTurnIndex = (businessTurnIndex + 1) % businessPlayers.length;
+
+            businessDiceDisplay.innerText = `Dice: ${total}`;
+            updateBusinessUI();
         }
-        socket.emit('business-roll-dice', { roomId: businessRoomId });
     });
 }
 
