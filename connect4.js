@@ -331,7 +331,10 @@ function endC4Game(draw) {
         const winnerName = c4CurrentPlayer === 1 ? c4P1Name : c4P2Name;
         c4WinningMessageTextElement.innerText = `${winnerName} Wins!`;
     }
-    c4WinningMessageElement.classList.add('show');
+    // Add delay to allow seeing the winning move
+    setTimeout(() => {
+        c4WinningMessageElement.classList.add('show');
+    }, 1500);
 }
 
 function checkC4Win(row, col) {
