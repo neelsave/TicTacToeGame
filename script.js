@@ -486,6 +486,45 @@ function handleClick(e) {
         return; // Wait for server update
     }
 
+    function makeComputerMove() {
+        // Check if game is still active (not won, not draw)
+        // We can check if winningMessageElement has 'show' class
+        if (winningMessageElement.classList.contains('show')) return;
+
+        // Simple AI: Random Move
+        // Get available tiles
+        const availableTiles = [...tileElements].filter(tile => {
+            return !tile.classList.contains(X_CLASS) && !tile.classList.contains(O_CLASS);
+        });
+
+        if (availableTiles.length === 0) return;
+
+        // Pick random
+        const randomTile = availableTiles[Math.floor(Math.random() * availableTiles.length)];
+
+        // Simulate click
+        // We need to manually trigger the logic because handleClick expects an event
+        // Or we can just call placeMark and swapTurns directly?
+        // Better to reuse logic but handleClick uses e.target.
+
+        // Let's create a synthetic event or just call logic directly
+        const currentClass = circleTurn ? O_CLASS : X_CLASS;
+        placeMark(randomTile, currentClass);
+
+        if (checkWin(currentClass)) {
+            endGame(false);
+        } else if (isDraw()) {
+            endGame(true);
+        } else {
+            swapTurns();
+            setBoardHoverClass();
+            updateStatusDisplay();
+        }
+    }
+
+    // Expose to window if needed
+    window.makeComputerMove = makeComputerMove;
+
     // Local Logic (Existing)
     if (tile.classList.contains('taken')) return; // Safety
 
