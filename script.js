@@ -487,39 +487,104 @@ function handleClick(e) {
     }
 
     function makeComputerMove() {
-        // Check if game is still active (not won, not draw)
-        // We can check if winningMessageElement has 'show' class
         if (winningMessageElement.classList.contains('show')) return;
 
-        // Simple AI: Random Move
-        // Get available tiles
-        const availableTiles = [...tileElements].filter(tile => {
-            return !tile.classList.contains(X_CLASS) && !tile.classList.contains(O_CLASS);
-        });
+        // Minimax AI
+        const boardState = getBoardState();
+        const bestMoveIndex = getBestMove(boardState);
 
-        if (availableTiles.length === 0) return;
+        if (bestMoveIndex !== -1) {
+            const tile = tileElements[bestMoveIndex];
+            const currentClass = circleTurn ? O_CLASS : X_CLASS;
+            placeMark(tile, currentClass);
 
-        // Pick random
-        const randomTile = availableTiles[Math.floor(Math.random() * availableTiles.length)];
-
-        // Simulate click
-        // We need to manually trigger the logic because handleClick expects an event
-        // Or we can just call placeMark and swapTurns directly?
-        // Better to reuse logic but handleClick uses e.target.
-
-        // Let's create a synthetic event or just call logic directly
-        const currentClass = circleTurn ? O_CLASS : X_CLASS;
-        placeMark(randomTile, currentClass);
-
-        if (checkWin(currentClass)) {
-            endGame(false);
-        } else if (isDraw()) {
-            endGame(true);
-        } else {
-            swapTurns();
-            setBoardHoverClass();
-            updateStatusDisplay();
+            if (checkWin(currentClass)) {
+                endGame(false);
+            } else if (isDraw()) {
+                endGame(true);
+            } else {
+                swapTurns();
+                setBoardHoverClass();
+                updateStatusDisplay();
+            }
         }
+    }
+
+    function getBoardState() {
+        return [...tileElements].map(tile => {
+            if (tile.classList.contains(X_CLASS)) return X_CLASS;
+            if (tile.classList.contains(O_CLASS)) return O_CLASS;
+            return null;
+        });
+    }
+
+    function getBestMove(board) {
+        let bestScore = -Infinity;
+        let move = -1;
+
+        // Computer is 'O' (Maximizing)
+        for (let i = 0; i < 9; i++) {
+            if (board[i] === null) {
+                board[i] = O_CLASS;
+                let score = minimax(board, 0, false);
+                board[i] = null;
+                if (score > bestScore) {
+                    bestScore = score;
+                    move = i;
+                }
+            }
+        }
+        return move;
+    }
+
+    const scores = {
+        [X_CLASS]: -10,
+        [O_CLASS]: 10,
+        'tie': 0
+    };
+
+    function minimax(board, depth, isMaximizing) {
+        let result = checkWinnerState(board);
+        if (result !== null) {
+            return scores[result];
+        }
+
+        if (isMaximizing) {
+            let bestScore = -Infinity;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === null) {
+                    board[i] = O_CLASS;
+                    let score = minimax(board, depth + 1, false);
+                    board[i] = null;
+                    bestScore = Math.max(score, bestScore);
+                }
+            }
+            return bestScore;
+        } else {
+            let bestScore = Infinity;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === null) {
+                    board[i] = X_CLASS;
+                    let score = minimax(board, depth + 1, true);
+                    board[i] = null;
+                    bestScore = Math.min(score, bestScore);
+                }
+            }
+            return bestScore;
+        }
+    }
+
+    function checkWinnerState(board) {
+        for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
+            const [a, b, c] = WINNING_COMBINATIONS[i];
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                return board[a];
+            }
+        }
+        if (board.every(cell => cell !== null)) {
+            return 'tie';
+        }
+        return null;
     }
 
     // Expose to window if needed
