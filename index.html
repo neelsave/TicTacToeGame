@@ -450,25 +450,42 @@
         <button class="btn-home" onclick="showHome()">
             <span>←</span> Home
         </button>
-        <div class="game-container">
+
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="pongSetupScreen">
+            <div class="setup-content">
+                <h1>Pong</h1>
+
+                <!-- Mode Selection -->
+                <div class="mode-selection">
+                    <button id="pongModeLocalBtn" class="mode-btn active">Local Play</button>
+                    <button id="pongModeComputerBtn" class="mode-btn">Vs Computer</button>
+                </div>
+
+                <button id="pongStartBtn" class="btn-start">Start Game</button>
+            </div>
+        </div>
+
+        <div class="game-container hidden" id="pongGameContainer">
             <header class="game-header">
                 <h1>Pong</h1>
                 <div class="scoreboard">
                     <div class="score-item">
-                        <span class="score-name">P1 (W/S)</span>
+                        <span class="score-name">P1</span>
                         <span class="score-value" id="pongScore1">0</span>
                     </div>
                     <div class="score-item">
-                        <span class="score-name">P2 (↑/↓)</span>
+                        <span class="score-name">P2</span>
                         <span class="score-value" id="pongScore2">0</span>
                     </div>
                 </div>
             </header>
-            <div class="pong-container">
+            <div class="pong-container" id="pongArea">
                 <canvas id="pongCanvas"></canvas>
             </div>
             <div class="controls">
                 <button class="btn-reset" onclick="initPong()">Restart Game</button>
+                <button class="btn-secondary" onclick="showPongSetup()">Change Mode</button>
             </div>
         </div>
     </div>

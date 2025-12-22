@@ -2940,6 +2940,7 @@ body {
     color: #7dd3fc;
     text-decoration: underline;
 }
+
 /* Business Buy Modal */
 #businessBuyModal .modal-content {
     background: white;
@@ -2998,4 +2999,20 @@ body {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.5);
     font-family: monospace;
+}
+
+/* Pong Specifics */
+.pong-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+#pongCanvas {
+    max-width: 100%;
+    border-radius: 12px;
+    border: 2px solid var(--glass-border);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.3);
 }
