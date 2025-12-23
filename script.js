@@ -272,6 +272,7 @@ window.addEventListener('load', () => {
 let isOnline = false;
 let vsComputer = false;
 let socket = io('https://tictactoegame-zyid.onrender.com');
+window.socket = socket; // Expose to other games
 let currentRoomId = null;
 let myPlayer = null; // 'X' or 'O'
 let onlineTurn = 'X'; // Server source of truth

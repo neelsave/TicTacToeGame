@@ -1,6 +1,3 @@
-const C4_ROWS = 6;
-const C4_COLS = 7;
-const PLAYER_1_CLASS = 'player1'; // Red
 const PLAYER_2_CLASS = 'player2'; // Yellow
 
 let c4Board = [];
@@ -12,6 +9,7 @@ let c4IsOnline = false;
 let c4VsComputer = false;
 let c4MyPlayer = null; // 'Red' or 'Yellow'
 let c4RoomId = null;
+let socket = null; // Fix: Declare socket explicitly
 
 const c4BoardElement = document.getElementById('c4Board');
 const c4StatusDisplay = document.getElementById('c4StatusDisplay');
@@ -116,8 +114,11 @@ function initC4Socket() {
     if (typeof io === 'undefined') return;
 
     // Reuse global socket from script.js if available, else create
-    if (!socket) {
+    if (window.socket) {
+        socket = window.socket;
+    } else if (!socket) {
         socket = io('https://tictactoegame-zyid.onrender.com');
+        window.socket = socket;
     }
 
     // Remove old listeners to prevent duplicates
