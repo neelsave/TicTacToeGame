@@ -239,11 +239,7 @@ function resetConnect4Board() {
 }
 
 // Add Reset Button Handler
-const c4ResetBtn = document.getElementById('c4ResetBtn'); // Need to add this ID to HTML if not there
-// Wait, index.html doesn't have a specific reset button for C4 inside the game container?
-// It has "New Game" in winning message.
-// Let's check index.html... It has a generic "Reset Board" button in Tic Tac Toe, but C4?
-// I need to check if C4 has a reset button in HTML.
+// Reset Button Logic is handled at the bottom of the file
 
 function renderC4BoardInitial() {
     c4BoardElement.innerHTML = '';
@@ -566,9 +562,21 @@ function checkC4Draw() {
 }
 
 // Restart Handler (for button in Winning Message)
-const c4RestartBtn = document.getElementById('c4RestartBtn'); // Need to ensure this ID exists
+const c4RestartBtn = document.getElementById('c4RestartBtn');
 if (c4RestartBtn) {
     c4RestartBtn.addEventListener('click', () => {
+        if (c4IsOnline && socket) {
+            socket.emit('reset-c4', c4RoomId);
+        } else {
+            resetConnect4Board();
+        }
+    });
+}
+
+// Also handle the main reset button
+const c4ResetBtn = document.getElementById('c4ResetBtn');
+if (c4ResetBtn) {
+    c4ResetBtn.addEventListener('click', () => {
         if (c4IsOnline && socket) {
             socket.emit('reset-c4', c4RoomId);
         } else {
