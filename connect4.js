@@ -1,3 +1,6 @@
+const C4_ROWS = 6;
+const C4_COLS = 7;
+const PLAYER_1_CLASS = 'player1'; // Red
 const PLAYER_2_CLASS = 'player2'; // Yellow
 
 let c4Board = [];
